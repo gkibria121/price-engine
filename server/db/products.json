@@ -1,0 +1,55 @@
+{  "products" : [
+    {
+      "Name": "Business Card",
+      "PricingRules": [
+        { "AttributeName": "Paper", "AttributeValue": "Glossy", "PercentageChange": 10 },
+        { "AttributeName": "Paper", "AttributeValue": "Matte", "PercentageChange": 5 },
+        { "AttributeName": "Size", "AttributeValue": "Large", "PercentageChange": 20 }
+      ],
+      "DeliveryRules": [
+        { "DeliveryNature": "normal", "DeliveryFee": 0 },
+        { "DeliveryNature": "express", "DeliveryFee": 50 },
+        { "DeliveryNature": "overnight", "DeliveryFee": 100 }
+      ],
+      "QuantityPricing": [
+        { "Quantity": 10, "Price": 100 },
+        { "Quantity": 20, "Price": 180 },
+        { "Quantity": 50, "Price": 360 },
+        { "Quantity": 100, "Price": 480 }
+      ]
+    },
+    {
+      "Name": "Flyer",
+      "PricingRules": [
+        { "AttributeName": "Paper", "AttributeValue": "Glossy", "PercentageChange": 15 },
+        { "AttributeName": "Size", "AttributeValue": "A4", "PercentageChange": 10 }
+      ],
+      "DeliveryRules": [
+        { "DeliveryNature": "normal", "DeliveryFee": 0 },
+        { "DeliveryNature": "express", "DeliveryFee": 50 },
+        { "DeliveryNature": "priority", "DeliveryFee": 150 }
+      ],
+      "QuantityPricing": [
+        { "Quantity": 10, "Price": 80 },
+        { "Quantity": 50, "Price": 350 },
+        { "Quantity": 100, "Price": 600 }
+      ]
+    },
+    {
+      "Name": "Poster",
+      "PricingRules": [
+        { "AttributeName": "Size", "AttributeValue": "Large", "PercentageChange": 25 },
+        { "AttributeName": "Finish", "AttributeValue": "Laminated", "PercentageChange": 30 }
+      ],
+      "DeliveryRules": [
+        { "DeliveryNature": "normal", "DeliveryFee": 0 },
+        { "DeliveryNature": "priority", "DeliveryFee": 100 }
+      ],
+      "QuantityPricing": [
+        { "Quantity": 5, "Price": 150 },
+        { "Quantity": 10, "Price": 280 },
+        { "Quantity": 50, "Price": 1200 }
+            ]
+   }
+  ]
+}
