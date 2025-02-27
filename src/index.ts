@@ -24,18 +24,52 @@ const productSchema = new mongoose.Schema({
 
 const ProductModel = mongoose.model("Product", productSchema);
 
+// MongoDB Vendor Schema
+const vendorSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  address: { type: String, required: true },
+});
+
+const VendorModel = mongoose.model("Vendor", vendorSchema);
+
+// MongoDB VendorProduct Schema (Relationship Table)
+const vendorProductSchema = new mongoose.Schema({
+  vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor", required: true },
+  productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+});
+
+const VendorProductModel = mongoose.model("VendorProduct", vendorProductSchema);
+
 // Express App
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 
-// 📌 Add a Product (Save to MongoDB)
-app.post("/api/products", async (req: Request, res: Response) => {
+// 📌 Add a Product and Associate with Vendor
+app.post("/api/products", async (req: Request, res: Response): Promise<any> => {
   try {
-    const newProduct = new ProductModel(req.body);
+    const { vendorId, ...productData } = req.body;
+
+    // Check if vendorId is provided
+    if (!vendorId) {
+      return res.status(400).json({ message: "Vendor ID is required" });
+    }
+
+    // Create the new product
+    const newProduct = new ProductModel(productData);
     await newProduct.save();
-    res.status(201).json(newProduct);
+
+    // Associate product with vendor
+    const newAssociation = new VendorProductModel({
+      vendorId,
+      productId: newProduct._id,
+    });
+
+    await newAssociation.save();
+
+    res.status(201).json({ product: newProduct, association: newAssociation });
   } catch (error) {
     res.status(500).json({ message: "Error saving product", error });
   }
@@ -54,10 +88,20 @@ app.get("/api/products", async (req: Request, res: Response) => {
 // 📌 Get Product Info and Calculate Price
 app.post("/api/calculate-price", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { productName, quantity, attributes, deliveryMethod } = req.body;
+    const { productName, productId, vendorId, quantity, attributes, deliveryMethod } = req.body;
 
-    const productData = await ProductModel.findOne({ name: productName }).sort({ _id: -1 });
+    const vendorProduct = await VendorProductModel.findOne({ productId, vendorId }).populate(
+      "productId"
+    );
 
+    if (!vendorProduct) {
+      res.status(404).json({ message: "Product not found for this vendor" });
+      return;
+    }
+
+    const productData = await ProductModel.findOne({ _id: vendorProduct.productId }).sort({
+      _id: -1,
+    });
     if (!productData) {
       res.status(404).json({ message: "Product not found" });
       return;
@@ -91,6 +135,7 @@ app.post("/api/calculate-price", async (req: Request, res: Response): Promise<vo
     res.status(500).json({ message: "Error calculating price", error });
   }
 });
+
 // 📌 Update a Product (PUT)
 app.put("/api/products/:id", async (req: Request, res: Response) => {
   try {
@@ -111,6 +156,30 @@ app.put("/api/products/:id", async (req: Request, res: Response) => {
     res.json(updatedProduct);
   } catch (error) {
     res.status(500).json({ message: "Error updating product", error });
+  }
+});
+
+// 📌 Add a Vendor (Save to MongoDB)
+app.post("/api/vendors", async (req: Request, res: Response) => {
+  try {
+    const newVendor = new VendorModel(req.body);
+    await newVendor.save();
+    res.status(201).json(newVendor);
+  } catch (error) {
+    res.status(500).json({ message: "Error saving vendor", error });
+  }
+});
+// 📌clear database
+app.get("/api/clear", async (req: Request, res: Response) => {
+  try {
+    await VendorModel.deleteMany({});
+    await ProductModel.deleteMany({});
+    await VendorProductModel.deleteMany({});
+    res.status(200).json({
+      message: "Database cleared successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error clearing database", error });
   }
 });
 
