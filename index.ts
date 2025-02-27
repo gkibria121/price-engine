@@ -1,19 +1,23 @@
 import express, { Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
-import Attribute from "./Attribute";
-import DeliveryRule from "./DeliveryRule";
-import PriceCalculationRequest from "./PriceCalculationRequest";
-import PricingEngine from "./PricingEngine";
-import PricingRule from "./PricingRule";
-import Product from "./Product";
-import QuantityPricing from "./QuantityPricing";
+import Attribute from "./src/Attribute";
+import DeliveryRule from "./src/DeliveryRule";
+import PriceCalculationRequest from "./src/PriceCalculationRequest";
+import PricingEngine from "./src/PricingEngine";
+import PricingRule from "./src/PricingRule";
+import Product from "./src/Product";
+import QuantityPricing from "./src/QuantityPricing";
+import dotenv from "dotenv";
+// Load environment variables
+dotenv.config();
 
 // MongoDB Connection
+const mongoUri = process.env.MONGO_URI as string;
+
 mongoose
-  .connect("mongodb://localhost:27017/pricing-engine")
+  .connect(`${mongoUri}/pricing-engine`)
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
-
 // MongoDB Product Schema
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
