@@ -25,6 +25,7 @@ export interface Product {
   pricingRules: PricingRule[];
   deliveryRules: DeliveryRule[];
   quantityPricing: QuantityPricing[];
+  vendor: Vendor;
 }
 
 // Vendor types

@@ -50,11 +50,23 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Get All Products
+// Get All Products with Vendors
 export async function GET() {
   try {
     await connectDB();
-    const products = await ProductModel.find();
+
+    // Retrieve product associations and populate vendor details
+    const vendorProducts = await VendorProductModel.find()
+      .populate("vendorId")
+      .populate("productId");
+
+    const products = vendorProducts.map((vp) => {
+      return {
+        ...vp.productId.toObject(),
+        vendor: vp.vendorId,
+      };
+    });
+
     return NextResponse.json(products);
   } catch (error: any) {
     console.error("❌ Error:", error);
