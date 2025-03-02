@@ -62,7 +62,8 @@ export const updateProduct = async (id: string, product: Product): Promise<Produ
 // API functions for Vendors
 export const getVendors = async (): Promise<Vendor[]> => {
   const response = await axios.get(`${API_URL}/vendors`);
-  return response.data;
+  console.log(response);
+  return response.data.vendors;
 };
 
 export const createVendor = async (vendor: Vendor): Promise<Vendor> => {
