@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import ProductModel from "@/models/Product";
 import VendorModel from "@/models/Vendor";
 import VendorProductModel from "@/models/VendorProduct";
-import PricingEngine from "@/lib/PricingEngine";
-import PriceCalculationRequest from "@/lib/PriceCalculationRequest";
-import Attribute from "@/utils/Attribute";
-import DeliveryRule from "@/utils/DeliveryRule";
-import PricingRule from "@/utils/PricingRule";
-import QuantityPricing from "@/utils/QuantityPricing";
-import Product from "@/utils/Product";
 import { NextApiRequest, NextApiResponse } from "next";
 import { connectDB } from "@lib/db";
 dotenv.config();
