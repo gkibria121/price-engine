@@ -1,45 +1,45 @@
-// View Component for Price Calculation
 "use client";
 import { getProducts, Product } from "@/lib/api";
 import Attribute from "@/utils/Attribute";
 import { useEffect, useState } from "react";
 
-function getUniqueObject<T extends Record<string, any>[]>(obj: T, uniqeKey = "name"): T {
-  const uniqueObjects: T = obj.reduce((accumulator, currentValue) => {
-    // Check if the object already exists in the accumulator (based on a key or criteria)
-    const existingIndex = accumulator.findIndex((item: Record<string, any>) => {
-      return item[uniqeKey] === currentValue[uniqeKey];
-    });
-    if (existingIndex === -1) {
+// Helper function to get unique objects from an array based on a key
+function getUniqueObjects<T extends Record<string, any>>(array: T[], uniqueKey = "name"): T[] {
+  return array.reduce((accumulator: T[], currentValue: T) => {
+    const exists = accumulator.some((item) => item[uniqueKey] === currentValue[uniqueKey]);
+    if (!exists) {
       accumulator.push(currentValue);
     }
     return accumulator;
-  }, []) as T;
-
-  return uniqueObjects;
+  }, []);
 }
 
-function toTitleCase(str: string) {
-  return str[0].toLocaleUpperCase() + str.toLocaleLowerCase().slice(1);
+// Helper function to convert string to title case
+function toTitleCase(str: string): string {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
 interface PriceCalculationResult {
-  total: number;
+  totalPrice: number;
   breakdown: Record<string, any>;
 }
 
 export default function PriceCalculator() {
-  const [attributes, setAttributes] = useState<Attribute[]>([{ name: "", selectedValue: "" }]);
+  // State definitions
+  const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [productName, setProductName] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState("");
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState<number>(1);
   const [vendorId, setVendorId] = useState("");
   const [result, setResult] = useState<PriceCalculationResult | null>(null);
   const [error, setError] = useState("");
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
-  const uniqeProducts = getUniqueObject(products);
-  const vendorsForAProduct = getUniqueObject(
+
+  // Derived state
+  const uniqueProducts = getUniqueObjects(products);
+  const vendorsForSelectedProduct = getUniqueObjects(
     products.filter((product) => product.name === productName).map((product) => product.vendor)
   );
 
@@ -48,29 +48,21 @@ export default function PriceCalculator() {
   );
 
   const selectedProductId = selectedProduct?._id;
-  const deliveryMethods = selectedProduct?.deliveryRules.map((rule) => rule.method) ?? [];
-  const availableAttributes = selectedProduct?.pricingRules ?? [];
-  const uniqeAvailableAttributes = getUniqueObject(availableAttributes, "attribute");
-  const addAttribute = () => {
-    setAttributes([
-      ...attributes,
-      {
-        name: availableAttributes[0].attribute ?? "",
-        selectedValue: availableAttributes[0].value ?? "",
-      },
-    ]);
-  };
+  const deliveryMethods = selectedProduct?.deliveryRules?.map((rule) => rule.method) || [];
+  const availableAttributes = selectedProduct?.pricingRules || [];
+  const uniqueAvailableAttributes = getUniqueObjects(availableAttributes, "attribute");
 
+  // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setIsLoading(true);
         const data = await getProducts();
         setProducts(data);
-        console.log(data);
-        setLoading(false);
+        setIsLoading(false);
       } catch (err) {
         setError("Failed to load products");
-        setLoading(false);
+        setIsLoading(false);
         console.error(err);
       }
     };
@@ -78,154 +70,307 @@ export default function PriceCalculator() {
     fetchProducts();
   }, []);
 
+  // Reset form when product changes
+  useEffect(() => {
+    if (productName && vendorId && uniqueAvailableAttributes.length > 0) {
+      // Initialize with the first available attribute and value
+      const firstAttribute = uniqueAvailableAttributes[0];
+      const firstValue =
+        availableAttributes.find((attr) => attr.attribute === firstAttribute.attribute)?.value ||
+        "";
+
+      setAttributes([
+        {
+          name: firstAttribute.attribute,
+          selectedValue: firstValue,
+        },
+      ]);
+
+      // Reset delivery method
+      setDeliveryMethod("");
+    } else {
+      setAttributes([]);
+    }
+  }, [productName, vendorId]);
+
+  // Handlers
   const handleAttributeChange = (index: number, field: keyof Attribute, value: string) => {
     const updatedAttributes = [...attributes];
     updatedAttributes[index][field] = value;
+
+    // If the attribute name changed, update its value to the first available value
+    if (field === "name") {
+      const firstValue = availableAttributes.find((attr) => attr.attribute === value)?.value || "";
+      updatedAttributes[index].selectedValue = firstValue;
+    }
+
     setAttributes(updatedAttributes);
+  };
+
+  const addAttribute = () => {
+    if (
+      uniqueAvailableAttributes.length === 0 ||
+      attributes.length >= uniqueAvailableAttributes.length
+    ) {
+      return; // Don't add more attributes than available
+    }
+
+    // Find an attribute that hasn't been selected yet
+    const usedAttributes = new Set(attributes.map((attr) => attr.name));
+    const nextAttribute = uniqueAvailableAttributes.find(
+      (attr) => !usedAttributes.has(attr.attribute)
+    );
+
+    if (nextAttribute) {
+      const firstValue =
+        availableAttributes.find((attr) => attr.attribute === nextAttribute.attribute)?.value || "";
+      setAttributes([
+        ...attributes,
+        {
+          name: nextAttribute.attribute,
+          selectedValue: firstValue,
+        },
+      ]);
+    }
   };
 
   const deleteAttribute = (index: number) => {
-    const updatedAttributes = attributes.filter((_, i) => i !== index);
-    setAttributes(updatedAttributes);
+    setAttributes(attributes.filter((_, i) => i !== index));
   };
 
   const calculatePrice = async () => {
-    const response = await fetch("/api/calculate-price", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        productId: selectedProductId,
-        vendorId,
-        quantity: quantity,
-        attributes,
-        deliveryMethod: deliveryMethod,
-      }),
-    });
+    if (!selectedProductId || !vendorId || !deliveryMethod || quantity <= 0) {
+      setError("Please fill in all required fields");
+      return;
+    }
 
-    const data: PriceCalculationResult = await response.json();
-    setResult(data);
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/calculate-price", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: selectedProductId,
+          vendorId,
+          quantity,
+          attributes,
+          deliveryMethod,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to calculate price");
+      }
+
+      const data: PriceCalculationResult = await response.json();
+      setResult(data);
+      console.log(data);
+      setError("");
+    } catch (err) {
+      setError("Error calculating price");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // Form validation
+  const isFormValid = selectedProductId && vendorId && deliveryMethod && quantity > 0;
+
   return (
-    <div className="p-4">
-      <h1 className="text-2xl mb-4">Price Calculator</h1>
+    <div className="p-4 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6">Price Calculator</h1>
 
-      <select
-        name="productId"
-        id=""
-        className="border p-2 mb-2"
-        value={productName}
-        onChange={(e) => setProductName(e.target.value)}
-      >
-        <option value="" disabled>
-          Select A Product
-        </option>
-        {uniqeProducts.map((product) => {
-          return (
-            <option key={product.name} value={product.name}>
-              {product.name}
-            </option>
-          );
-        })}
-      </select>
+      {error && <div className="bg-red-100 text-red-700 p-3 mb-4 rounded">{error}</div>}
 
-      <select
-        name="vendorId"
-        id=""
-        className="border p-2 mb-2"
-        value={vendorId}
-        onChange={(e) => setVendorId(e.target.value)}
-      >
-        <option value="">Select A Vendor</option>
-        {vendorsForAProduct.map((vendor) => {
-          return (
-            <option key={vendor._id} value={vendor._id}>
-              {vendor.name}
-            </option>
-          );
-        })}
-      </select>
-
-      <input
-        type="number"
-        placeholder="Quantity"
-        name="quantity"
-        value={quantity}
-        onChange={(e) => setQuantity(+e.target.value)}
-        className="border p-2 mb-2"
-      />
-
-      {attributes.map((attr, index) => (
-        <div key={index} className="mb-2 flex items-center">
+      <div className="space-y-4">
+        {/* Product Selection */}
+        <div>
+          <label htmlFor="product" className="block text-sm font-medium mb-1">
+            Product
+          </label>
           <select
-            id=""
-            className="border p-2 mb-2"
-            defaultValue={""}
-            onChange={(e) => handleAttributeChange(index, "name", e.target.value)}
+            id="product"
+            className="w-full border p-2 rounded"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            disabled={isLoading}
           >
-            {" "}
             <option value="" disabled>
-              Select Attribute
+              Select A Product
             </option>
-            {uniqeAvailableAttributes?.map((attr) => (
-              <option value={attr.attribute} key={attr.value}>
-                {attr.attribute}
+            {uniqueProducts.map((product) => (
+              <option key={product.name} value={product.name}>
+                {product.name}
               </option>
             ))}
           </select>
-          <select
-            className="border p-2 mb-2"
-            defaultValue={""}
-            onChange={(e) => handleAttributeChange(index, "selectedValue", e.target.value)}
-          >
-            {" "}
-            <option value="" disabled>
-              Select A Value
-            </option>
-            {availableAttributes
-              ?.filter((attr) => attr.attribute === attributes[index].name)
-              .map((attr) => (
-                <option value={attr.value} key={attr.value}>
-                  {attr.value}
+        </div>
+
+        {/* Vendor Selection */}
+        {productName && (
+          <div>
+            <label htmlFor="vendor" className="block text-sm font-medium mb-1">
+              Vendor
+            </label>
+            <select
+              id="vendor"
+              className="w-full border p-2 rounded"
+              value={vendorId}
+              onChange={(e) => setVendorId(e.target.value)}
+              disabled={isLoading || vendorsForSelectedProduct.length === 0}
+            >
+              <option value="" disabled>
+                Select A Vendor
+              </option>
+              {vendorsForSelectedProduct.map((vendor) => (
+                <option key={vendor._id} value={vendor._id}>
+                  {vendor.name}
                 </option>
               ))}
-          </select>
+            </select>
+          </div>
+        )}
 
-          <button onClick={() => deleteAttribute(index)} className="bg-red-500 text-white mb-2 p-2">
-            Delete
-          </button>
-        </div>
-      ))}
+        {/* Quantity */}
+        {vendorId && (
+          <div>
+            <label htmlFor="quantity" className="block text-sm font-medium mb-1">
+              Quantity
+            </label>
+            <input
+              id="quantity"
+              type="number"
+              min="1"
+              placeholder="Quantity"
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
+              className="w-full border p-2 rounded"
+              disabled={isLoading}
+            />
+          </div>
+        )}
 
-      <button onClick={addAttribute} className="bg-blue-500 text-white p-2 mb-4">
-        Add Attribute
-      </button>
+        {/* Attributes */}
+        {vendorId && uniqueAvailableAttributes.length > 0 && (
+          <div>
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-sm font-medium">Attributes</label>
+              <button
+                type="button"
+                onClick={addAttribute}
+                className="bg-blue-500 text-white p-1 px-2 rounded text-sm"
+                disabled={attributes.length >= uniqueAvailableAttributes.length || isLoading}
+              >
+                Add Attribute
+              </button>
+            </div>
 
-      <select
-        name="deliveryMethod"
-        className="border p-2 mb-2"
-        value={deliveryMethod}
-        onChange={(e) => setDeliveryMethod(e.target.value)}
-      >
-        <option value="" disabled>
-          Select a method
-        </option>
+            {attributes.map((attr, index) => (
+              <div key={index} className="flex gap-2 mb-2">
+                <select
+                  className="flex-1 border p-2 rounded"
+                  value={attr.name}
+                  onChange={(e) => handleAttributeChange(index, "name", e.target.value)}
+                  disabled={isLoading}
+                >
+                  <option value="" disabled>
+                    Select Attribute
+                  </option>
+                  {uniqueAvailableAttributes.map((availAttr) => (
+                    <option
+                      key={availAttr.attribute}
+                      value={availAttr.attribute}
+                      disabled={attributes.some(
+                        (a, i) => i !== index && a.name === availAttr.attribute
+                      )}
+                    >
+                      {availAttr.attribute}
+                    </option>
+                  ))}
+                </select>
 
-        {deliveryMethods.map((method) => (
-          <option value={method} key={method}>
-            {toTitleCase(method)}
-          </option>
-        ))}
-      </select>
+                <select
+                  className="flex-1 border p-2 rounded"
+                  value={attr.selectedValue}
+                  onChange={(e) => handleAttributeChange(index, "selectedValue", e.target.value)}
+                  disabled={!attr.name || isLoading}
+                >
+                  <option value="" disabled>
+                    Select Value
+                  </option>
+                  {availableAttributes
+                    .filter((availAttr) => availAttr.attribute === attr.name)
+                    .map((availAttr) => (
+                      <option key={availAttr.value} value={availAttr.value}>
+                        {availAttr.value}
+                      </option>
+                    ))}
+                </select>
 
-      <button onClick={calculatePrice} className="bg-green-500 text-white p-2">
-        Calculate Price
-      </button>
+                <button
+                  type="button"
+                  onClick={() => deleteAttribute(index)}
+                  className="bg-red-500 text-white p-2 rounded"
+                  disabled={isLoading}
+                  aria-label="Delete attribute"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
+        {/* Delivery Method */}
+        {vendorId && (
+          <div>
+            <label htmlFor="delivery" className="block text-sm font-medium mb-1">
+              Delivery Method
+            </label>
+            <select
+              id="delivery"
+              className="w-full border p-2 rounded"
+              value={deliveryMethod}
+              onChange={(e) => setDeliveryMethod(e.target.value)}
+              disabled={isLoading || deliveryMethods.length === 0}
+            >
+              <option value="" disabled>
+                Select a method
+              </option>
+              {deliveryMethods.map((method) => (
+                <option value={method} key={method}>
+                  {toTitleCase(method)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Calculate Button */}
+        <button
+          type="button"
+          onClick={calculatePrice}
+          className="w-full bg-green-500 text-white p-2 rounded mt-4 disabled:bg-gray-300"
+          disabled={!isFormValid || isLoading}
+        >
+          {isLoading ? "Calculating..." : "Calculate Price"}
+        </button>
+      </div>
+
+      {/* Results */}
       {result && (
-        <div className="mt-4">
-          <h2 className="text-xl">Result:</h2>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
+        <div className="mt-6 p-4 border rounded bg-gray-50">
+          <h2 className="text-xl font-semibold mb-2">Calculation Result</h2>
+          <div className="text-lg font-bold mb-2">
+            Total: ${result?.totalPrice?.toFixed(2) ?? null}
+          </div>
+          <div>
+            <h3 className="text-md font-medium mb-1">Price Breakdown:</h3>
+            <pre className="bg-white p-2 rounded overflow-x-auto">
+              {JSON.stringify(result.breakdown, null, 2)}
+            </pre>
+          </div>
         </div>
       )}
     </div>
