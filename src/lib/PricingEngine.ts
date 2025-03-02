@@ -1,8 +1,8 @@
-import DeliveryRule from "./DeliveryRule";
+import DeliveryRule from "@utils/DeliveryRule";
 import PriceCalculationRequest from "./PriceCalculationRequest";
-import PricingRule from "./PricingRule";
-import Product from "./Product";
-import QuadraticCurveFitter from "./QuadraticCurveFitter";
+import PricingRule from "@utils/PricingRule";
+import Product from "@utils/Product";
+import QuadraticCurveFitter from "@utils/QuadraticCurveFitter";
 
 // Pricing Engine
 export default class PricingEngine {

@@ -1,10 +1,10 @@
-import Attribute from "./Attribute";
-import DeliveryRule from "./DeliveryRule";
-import PriceCalculationRequest from "./PriceCalculationRequest";
-import PricingEngine from "./PricingEngine";
-import PricingRule from "./PricingRule";
-import Product from "./Product";
-import QuantityPricing from "./QuantityPricing";
+import Attribute from "@utils/Attribute";
+import DeliveryRule from "@utils/DeliveryRule";
+import PriceCalculationRequest from "./lib/PriceCalculationRequest";
+import PricingEngine from "./lib/PricingEngine";
+import PricingRule from "@utils/PricingRule";
+import Product from "@utils/Product";
+import QuantityPricing from "@utils/QuantityPricing";
 
 // Example Usage
 const product = new Product(

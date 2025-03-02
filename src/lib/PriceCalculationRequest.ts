@@ -1,4 +1,4 @@
-import Attribute from "./Attribute";
+import Attribute from "@/utils/Attribute";
 
 export default class PriceCalculationRequest {
   productName: string;
