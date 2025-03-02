@@ -32,6 +32,7 @@ export default function PriceCalculator() {
   const [attributes, setAttributes] = useState<Attribute[]>([{ name: "", selectedValue: "" }]);
   const [productName, setProductName] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState("");
+  const [quantity, setQuantity] = useState(0);
   const [vendorId, setVendorId] = useState("");
   const [result, setResult] = useState<PriceCalculationResult | null>(null);
   const [error, setError] = useState("");
@@ -95,7 +96,7 @@ export default function PriceCalculator() {
       body: JSON.stringify({
         productId: selectedProductId,
         vendorId,
-        quantity: 20,
+        quantity: quantity,
         attributes,
         deliveryMethod: deliveryMethod,
       }),
@@ -145,15 +146,27 @@ export default function PriceCalculator() {
         })}
       </select>
 
-      <input type="number" placeholder="Quantity" name="quantity" className="border p-2 mb-2" />
+      <input
+        type="number"
+        placeholder="Quantity"
+        name="quantity"
+        value={quantity}
+        onChange={(e) => setQuantity(+e.target.value)}
+        className="border p-2 mb-2"
+      />
 
       {attributes.map((attr, index) => (
         <div key={index} className="mb-2 flex items-center">
           <select
             id=""
             className="border p-2 mb-2"
+            defaultValue={""}
             onChange={(e) => handleAttributeChange(index, "name", e.target.value)}
           >
+            {" "}
+            <option value="" disabled>
+              Select Attribute
+            </option>
             {uniqeAvailableAttributes?.map((attr) => (
               <option value={attr.attribute} key={attr.value}>
                 {attr.attribute}
@@ -162,9 +175,13 @@ export default function PriceCalculator() {
           </select>
           <select
             className="border p-2 mb-2"
-            id=""
+            defaultValue={""}
             onChange={(e) => handleAttributeChange(index, "selectedValue", e.target.value)}
           >
+            {" "}
+            <option value="" disabled>
+              Select A Value
+            </option>
             {availableAttributes
               ?.filter((attr) => attr.attribute === attributes[index].name)
               .map((attr) => (
