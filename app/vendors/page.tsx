@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Vendor } from "@/lib/api";
+import axios from "axios";
 
 export default function VendorList() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -30,7 +31,14 @@ export default function VendorList() {
 
     fetchVendors();
   }, []);
-
+  const deleteVendor = (id: string) => {
+    try {
+      axios.delete("/api/vendors/" + id);
+      window.location.reload();
+    } catch (e) {
+      console.log(e);
+    }
+  };
   return (
     <main className="p-6 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -105,6 +113,12 @@ export default function VendorList() {
                     >
                       Edit
                     </Link>
+                    <button
+                      onClick={() => deleteVendor(vendor._id as string)}
+                      className="text-red-600 cursor-pointer ml-2 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
