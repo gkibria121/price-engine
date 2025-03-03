@@ -10,6 +10,7 @@ export default function Page() {
   };
   const handleSuccess = () => {
     console.log("Vendor created successfully!");
+    router.push("/vendors");
   };
 
   return (
