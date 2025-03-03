@@ -42,9 +42,9 @@ export const getProducts = async (): Promise<Product[]> => {
   return response.data;
 };
 
-export const getProductById = async (id: string): Promise<{ product: Product }> => {
+export const getProductById = async (id: string): Promise<Product> => {
   const response = await axios.get(`${API_URL}/api/products/${id}`);
-  return response.data;
+  return response.data?.product;
 };
 
 export const createProduct = async (vendorId: string, product: Product): Promise<Product> => {
