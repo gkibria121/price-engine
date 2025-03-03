@@ -6,9 +6,10 @@ import { createVendor, Vendor } from "@/lib/api";
 
 interface VendorFormProps {
   onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-export default function VendorForm({ onSuccess }: VendorFormProps) {
+export default function VendorForm({ onSuccess, onCancel }: VendorFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -80,7 +81,7 @@ export default function VendorForm({ onSuccess }: VendorFormProps) {
       <div className="flex justify-end gap-4">
         <button
           type="button"
-          onClick={() => onSuccess && onSuccess()}
+          onClick={() => onCancel && onCancel()}
           className="px-4 py-2 border rounded"
         >
           Cancel
