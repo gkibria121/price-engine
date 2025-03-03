@@ -36,7 +36,7 @@ export default function VendorList() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Vendors</h1>
         <Link
-          href="/vendors/create"
+          href="/vendors/add"
           className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
         >
           Create Vendor
