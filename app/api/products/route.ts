@@ -55,18 +55,3 @@ export async function GET() {
     return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });
   }
 }
-
-// Clear Database
-export async function DELETE() {
-  try {
-    await connectDB();
-    await VendorModel.deleteMany({});
-    await ProductModel.deleteMany({});
-    await VendorProductModel.deleteMany({});
-
-    return NextResponse.json({ message: "Database cleared successfully" }, { status: 200 });
-  } catch (error: unknown) {
-    console.error("❌ Error:", error);
-    return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });
-  }
-}
