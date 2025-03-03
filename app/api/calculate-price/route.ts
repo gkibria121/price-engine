@@ -34,28 +34,32 @@ export async function POST(req: NextRequest) {
     const product = new Product(
       productData.name,
       productData.pricingRules.map(
-        (rule: any) => new PricingRule(rule.attribute, rule.value, rule.price)
+        (rule: { attribute: string; value: string; price: number }) =>
+          new PricingRule(rule.attribute, rule.value, rule.price)
       ),
-      productData.deliveryRules.map((rule: any) => new DeliveryRule(rule.method, rule.price)),
-      productData.quantityPricing.map((qp: any) => new QuantityPricing(qp.minQty, qp.price))
+      productData.deliveryRules.map(
+        (rule: { method: string; price: number }) => new DeliveryRule(rule.method, rule.price)
+      ),
+      productData.quantityPricing.map(
+        (qp: { minQty: number; price: number }) => new QuantityPricing(qp.minQty, qp.price)
+      )
     );
 
     const pricingEngine = new PricingEngine(product);
     const priceRequest = new PriceCalculationRequest(
       productData.name,
       quantity,
-      attributes.map((attr: any) => new Attribute(attr.name, attr.value)),
+      attributes.map(
+        (attr: { name: string; value: string }) => new Attribute(attr.name, attr.value)
+      ),
       deliveryMethod
     );
 
     const totalPrice = pricingEngine.calculatePrice(priceRequest);
 
     return NextResponse.json({ productName: productData.name, quantity, totalPrice });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Error:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });
   }
 }

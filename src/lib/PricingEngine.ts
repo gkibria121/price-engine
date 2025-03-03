@@ -18,7 +18,7 @@ export default class PricingEngine {
   }
 
   calculatePrice(request: PriceCalculationRequest): number {
-    let basePrice = this.curveFitter.predict(request.quantity);
+    const basePrice = this.curveFitter.predict(request.quantity);
     let total = basePrice;
 
     request.selectedAttributes.forEach((attribute) => {

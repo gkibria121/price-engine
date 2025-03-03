@@ -29,12 +29,9 @@ export async function POST(req: NextRequest) {
     await newAssociation.save();
 
     return NextResponse.json({ product: newProduct, association: newAssociation }, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Error:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });
   }
 }
 
@@ -53,12 +50,9 @@ export async function GET() {
     }));
 
     return NextResponse.json(products, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error("❌ Error:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });
   }
 }
 
@@ -71,11 +65,8 @@ export async function DELETE() {
     await VendorProductModel.deleteMany({});
 
     return NextResponse.json({ message: "Database cleared successfully" }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Error:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 import { getProducts, Product } from "@/lib/api";
 import Attribute from "@/utils/Attribute";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // Helper function to get unique objects from an array based on a key
 function getUniqueObjects<T extends Record<string, any>>(array: T[], uniqueKey = "name"): T[] {
@@ -22,7 +22,7 @@ function toTitleCase(str: string): string {
 
 interface PriceCalculationResult {
   totalPrice: number;
-  breakdown: Record<string, any>;
+  breakdown: Record<string, unknown>;
 }
 
 export default function PriceCalculator() {
@@ -49,7 +49,7 @@ export default function PriceCalculator() {
 
   const selectedProductId = selectedProduct?._id;
   const deliveryMethods = selectedProduct?.deliveryRules?.map((rule) => rule.method) || [];
-  const availableAttributes = selectedProduct?.pricingRules || [];
+  const availableAttributes = useMemo(() => selectedProduct?.pricingRules || [], [selectedProduct]);
   const uniqueAvailableAttributes = getUniqueObjects(availableAttributes, "attribute");
 
   // Fetch products on component mount
@@ -91,7 +91,7 @@ export default function PriceCalculator() {
     } else {
       setAttributes([]);
     }
-  }, [productName, vendorId]);
+  }, [productName, vendorId, uniqueAvailableAttributes, availableAttributes]);
 
   // Handlers
   const handleAttributeChange = (index: number, field: keyof Attribute, value: string) => {
