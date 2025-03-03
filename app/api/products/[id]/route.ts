@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import ProductModel from "@/models/Product";
 import VendorProductModel from "@/models/VendorProduct";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB();
-    const productId = params.id;
+    const productId = (await params).id;
 
     // Fetch product by ID
     const product = await ProductModel.findById(productId);
@@ -22,10 +22,10 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // Update Product and Vendor Association
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB();
-    const productId = params.id;
+    const productId = (await params).id;
     const updateData = await req.json();
 
     // Validate product exists

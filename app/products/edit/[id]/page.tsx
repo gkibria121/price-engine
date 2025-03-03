@@ -24,7 +24,7 @@ export default function AddProductPage() {
       }
     };
     fetchProduct();
-  }, []);
+  }, [id]);
 
   const handleSuccess = () => {
     router.push("/products");
