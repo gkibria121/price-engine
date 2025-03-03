@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getProducts, Product } from "@/lib/api";
+import DeleteProduct from "@/components/DeleteProduct";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -57,10 +58,11 @@ export default function ProductsPage() {
                 <Link
                   href={`/products/edit/${product._id}`}
                   key={product._id}
-                  className="bg-blue-600 px-2 py-1 rounded-md text-white"
+                  className="bg-blue-600 px-2 py-1 rounded-md text-white mr-2 ml-auto"
                 >
                   Edit
                 </Link>
+                <DeleteProduct id={product._id} />
               </div>
               <div className="text-sm text-gray-600">
                 <p>{product.pricingRules.length} pricing rules</p>
