@@ -37,21 +37,6 @@ export default function PriceCalculator() {
   const [isLoading, setIsLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
 
-  // Derived state
-  const uniqueProducts = getUniqueObjects(products);
-  const vendorsForSelectedProduct = getUniqueObjects(
-    products.filter((product) => product.name === productName).map((product) => product.vendor)
-  );
-
-  const selectedProduct = products.find(
-    (product) => product.name === productName && product.vendor._id === vendorId
-  );
-
-  const selectedProductId = selectedProduct?._id;
-  const deliveryMethods = selectedProduct?.deliveryRules?.map((rule) => rule.method) || [];
-  const availableAttributes = useMemo(() => selectedProduct?.pricingRules || [], [selectedProduct]);
-  const uniqueAvailableAttributes = getUniqueObjects(availableAttributes, "attribute");
-
   // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
@@ -70,7 +55,38 @@ export default function PriceCalculator() {
     fetchProducts();
   }, []);
 
-  // Reset form when product changes
+  // Derived state
+  const uniqueProducts = useMemo(() => getUniqueObjects(products), [products]);
+
+  const vendorsForSelectedProduct = useMemo(
+    () =>
+      getUniqueObjects(
+        products.filter((product) => product.name === productName).map((product) => product.vendor)
+      ),
+    [products, productName]
+  );
+
+  const selectedProduct = useMemo(
+    () =>
+      products.find((product) => product.name === productName && product.vendor._id === vendorId),
+    [products, productName, vendorId]
+  );
+
+  const selectedProductId = selectedProduct?._id;
+
+  const deliveryMethods = useMemo(
+    () => selectedProduct?.deliveryRules?.map((rule) => rule.method) || [],
+    [selectedProduct]
+  );
+
+  const availableAttributes = useMemo(() => selectedProduct?.pricingRules || [], [selectedProduct]);
+
+  const uniqueAvailableAttributes = useMemo(
+    () => getUniqueObjects(availableAttributes, "attribute"),
+    [availableAttributes]
+  );
+
+  // Reset form when product or vendor changes
   useEffect(() => {
     if (productName && vendorId && uniqueAvailableAttributes.length > 0) {
       // Initialize with the first available attribute and value
