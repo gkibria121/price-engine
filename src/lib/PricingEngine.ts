@@ -23,7 +23,7 @@ export default class PricingEngine {
 
     request.selectedAttributes.forEach((attribute) => {
       const rule = this.pricingRules.find(
-        (r) => r.attributeName === attribute.name && r.attributeValue === attribute.selectedValue
+        (r) => r.attributeName === attribute.name && r.attributeValue === attribute.value
       );
       if (rule) {
         total += total * (rule.percentageChange / 100);
@@ -44,7 +44,7 @@ export default class PricingEngine {
     const deliveryCharge = deliveryRule.deliveryFee;
     return {
       totalPrice: total,
-      breakdown: { basePrice: basePrice, attributeCost, deliveryCharge, request },
+      breakdown: { basePrice: basePrice, attributeCost, deliveryCharge },
     };
   }
 }
