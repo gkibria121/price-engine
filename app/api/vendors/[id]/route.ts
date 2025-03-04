@@ -6,13 +6,17 @@ export async function DELETE(request: NextRequest, { params }) {
   try {
     await connectDB();
     const { id } = await params;
-    // await VendorModel.deleteMany({});
-    // await VendorProductModel.deleteMany({});
-    // await ProductModel.deleteOne({ _id: id });
-    await VendorModel.deleteOne({ _id: id });
-    await VendorProductModel.deleteOne({ productId: id });
 
-    return NextResponse.json({ message: "Product deleted successfully" }, { status: 200 });
+    const vendor = await VendorModel.findById(id);
+    if (!vendor) {
+      return NextResponse.json({ message: "Vendor not found!" }, { status: 404 });
+    }
+
+    // Delete vendor and related products
+    await VendorProductModel.deleteMany({ vendorId: id });
+    await VendorModel.findByIdAndDelete(id);
+
+    return NextResponse.json({ message: "Vendor deleted successfully" }, { status: 200 });
   } catch (error: unknown) {
     console.error("❌ Error:", error);
     return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });

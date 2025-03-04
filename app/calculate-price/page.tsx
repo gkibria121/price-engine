@@ -98,7 +98,7 @@ export default function PriceCalculator() {
       setAttributes([
         {
           name: firstAttribute.attribute,
-          selectedValue: firstValue,
+          value: firstValue,
         },
       ]);
 
@@ -117,7 +117,7 @@ export default function PriceCalculator() {
     // If the attribute name changed, update its value to the first available value
     if (field === "name") {
       const firstValue = availableAttributes.find((attr) => attr.attribute === value)?.value || "";
-      updatedAttributes[index].selectedValue = firstValue;
+      updatedAttributes[index].value = firstValue;
     }
 
     setAttributes(updatedAttributes);
@@ -144,7 +144,7 @@ export default function PriceCalculator() {
         ...attributes,
         {
           name: nextAttribute.attribute,
-          selectedValue: firstValue,
+          value: firstValue,
         },
       ]);
     }
@@ -180,7 +180,6 @@ export default function PriceCalculator() {
 
       const data: PriceCalculationResult = await response.json();
       setResult(data);
-      console.log(data);
       setError("");
     } catch (err) {
       setError("Error calculating price");
@@ -308,8 +307,8 @@ export default function PriceCalculator() {
 
                 <select
                   className="flex-1 border p-2 rounded"
-                  value={attr.selectedValue}
-                  onChange={(e) => handleAttributeChange(index, "selectedValue", e.target.value)}
+                  value={attr.value}
+                  onChange={(e) => handleAttributeChange(index, "value", e.target.value)}
                   disabled={!attr.name || isLoading}
                 >
                   <option value="" disabled>
@@ -379,7 +378,7 @@ export default function PriceCalculator() {
         <div className="mt-6 p-4 border rounded bg-gray-50">
           <h2 className="text-xl font-semibold mb-2">Calculation Result</h2>
           <div className="text-lg font-bold mb-2">
-            Total: ${result?.totalPrice?.toFixed(2) ?? null}
+            Total: £ {result?.totalPrice?.toFixed(2) ?? null}
           </div>
           <div>
             <h3 className="text-md font-medium mb-1">Price Breakdown:</h3>

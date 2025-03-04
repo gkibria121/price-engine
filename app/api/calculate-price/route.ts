@@ -55,9 +55,9 @@ export async function POST(req: NextRequest) {
       deliveryMethod
     );
 
-    const totalPrice = pricingEngine.calculatePrice(priceRequest);
+    const priceData = pricingEngine.calculatePrice(priceRequest);
 
-    return NextResponse.json({ productName: productData.name, quantity, totalPrice });
+    return NextResponse.json({ productName: productData.name, quantity, ...priceData });
   } catch (error: unknown) {
     console.error("❌ Error:", error);
     return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });

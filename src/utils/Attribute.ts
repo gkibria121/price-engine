@@ -1,9 +1,9 @@
 export default class Attribute {
   name: string;
-  selectedValue: string;
+  value: string;
 
-  constructor(name: string, selectedValue: string) {
+  constructor(name: string, value: string) {
     this.name = name;
-    this.selectedValue = selectedValue;
+    this.value = value;
   }
 }
