@@ -17,7 +17,7 @@ export default class PricingEngine {
     this.curveFitter.fit(product.quantityPricing);
   }
 
-  calculatePrice(request: PriceCalculationRequest): number {
+  calculatePrice(request: PriceCalculationRequest): Record<string, unknown> {
     const basePrice = this.curveFitter.predict(request.quantity);
     let total = basePrice;
 
@@ -30,6 +30,8 @@ export default class PricingEngine {
       }
     });
 
+    const attributeCost = total - basePrice;
+
     const deliveryRule = this.deliveryRules.find(
       (r) => r.deliveryNature.toLowerCase() === request.deliveryMethod.toLowerCase()
     );
@@ -39,7 +41,10 @@ export default class PricingEngine {
     }
 
     total += deliveryRule.deliveryFee;
-
-    return total;
+    const deliveryCharge = deliveryRule.deliveryFee;
+    return {
+      totalPrice: total,
+      breakdown: { basePrice: basePrice, attributeCost, deliveryCharge, request },
+    };
   }
 }

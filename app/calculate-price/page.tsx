@@ -121,6 +121,7 @@ export default function PriceCalculator() {
     }
 
     setAttributes(updatedAttributes);
+    console.log(updatedAttributes);
   };
 
   const addAttribute = () => {
