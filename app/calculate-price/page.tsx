@@ -259,7 +259,7 @@ export default function PriceCalculator() {
               min="1"
               placeholder="Quantity"
               value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
+              onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value) || 0))}
               className="w-full border p-2 rounded"
               disabled={isLoading}
             />
