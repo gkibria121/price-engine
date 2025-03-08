@@ -38,7 +38,7 @@ export default function AddProductPage() {
   return (
     <div>
       <div className="flex justify-between">
-        <h1 className="text-3xl font-bold mb-6">Add New Product</h1>
+        <h1 className="text-3xl font-bold mb-6">Edit Product</h1>
         <div className="">
           <select
             name="form_type"

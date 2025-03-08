@@ -15,15 +15,23 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ vendor: newVendor }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ message: "Internal Server Error", error }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal Server Error", error },
+      { status: 500 }
+    );
   }
 }
 
 export async function GET() {
   try {
+    await connectDB();
     const vendors = await Vendor.find();
+
     return NextResponse.json({ vendors: vendors }, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ message: "Internal Server Error", error }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal Server Error", error },
+      { status: 500 }
+    );
   }
 }

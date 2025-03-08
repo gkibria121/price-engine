@@ -232,7 +232,7 @@ export default function ProductForm({
         {quantityFields.map((field, index) => (
           <div key={field.id} className="flex gap-4 items-start border-b pb-4">
             <div className="flex-1">
-              <label className="block mb-1 text-sm">Minimum Quantity</label>
+              <label className="block mb-1 text-sm">Quantity</label>
               <input
                 type="number"
                 {...register(`quantityPricing.${index}.minQty` as const, {
