@@ -11,27 +11,46 @@ dotenv.config();
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { vendorId, ...productData } = await req.json();
+    const { vendorId, name, pricingRules, deliveryRules, quantityPricing } =
+      await req.json();
 
     if (!vendorId) {
-      return NextResponse.json({ message: "Vendor ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Vendor ID is required" },
+        { status: 400 }
+      );
     }
 
     const vendor = await VendorModel.findById(vendorId);
     if (!vendor) {
-      return NextResponse.json({ message: "Vendor not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Vendor not found" },
+        { status: 404 }
+      );
     }
 
-    const newProduct = new ProductModel(productData);
+    const newProduct = new ProductModel({ name });
     await newProduct.save();
 
-    const newAssociation = new VendorProductModel({ vendorId, productId: newProduct._id });
+    const newAssociation = new VendorProductModel({
+      vendorId,
+      productId: newProduct._id,
+      pricingRules,
+      deliveryRules,
+      quantityPricing,
+    });
     await newAssociation.save();
 
-    return NextResponse.json({ product: newProduct, association: newAssociation }, { status: 201 });
+    return NextResponse.json(
+      { product: newProduct, association: newAssociation },
+      { status: 201 }
+    );
   } catch (error: unknown) {
     console.error("❌ Error:", error);
-    return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error", error: error },
+      { status: 500 }
+    );
   }
 }
 
@@ -47,11 +66,17 @@ export async function GET() {
     const products = vendorProducts.map((vp) => ({
       ...vp.productId.toObject(),
       vendor: vp.vendorId,
+      pricingRules: vp.pricingRules,
+      deliveryRules: vp.deliveryRules,
+      quantityPricing: vp.quantityPricing,
     }));
 
     return NextResponse.json(products, { status: 200 });
   } catch (error) {
     console.error("❌ Error:", error);
-    return NextResponse.json({ message: "Internal server error", error: error }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error", error: error },
+      { status: 500 }
+    );
   }
 }
