@@ -44,10 +44,13 @@ export const getProducts = async (): Promise<Product[]> => {
 
 export const getProductById = async (id: string): Promise<Product> => {
   const response = await axios.get(`${API_URL}/api/products/${id}`);
-  return response.data?.product;
+  return response.data;
 };
 
-export const createProduct = async (vendorId: string, product: Product): Promise<Product> => {
+export const createProduct = async (
+  vendorId: string,
+  product: Product
+): Promise<Product> => {
   const response = await axios.post(`${API_URL}/api/products`, {
     vendorId,
     ...product,
@@ -55,7 +58,10 @@ export const createProduct = async (vendorId: string, product: Product): Promise
   return response.data;
 };
 
-export const updateProduct = async (id: string, product: Product): Promise<Product> => {
+export const updateProduct = async (
+  id: string,
+  product: Product
+): Promise<Product> => {
   const response = await axios.put(`${API_URL}/api/products/${id}`, product);
   return response.data;
 };

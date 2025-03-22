@@ -25,6 +25,7 @@ export async function GET(
 
     return NextResponse.json(
       {
+        _id: productVendor.productId._id,
         name: productVendor.productId.name,
         vendor: productVendor.vendorId,
         pricingRules: productVendor.pricingRules,
