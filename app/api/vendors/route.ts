@@ -5,13 +5,21 @@ import Vendor from "@/models/Vendor";
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { name, email, address } = await req.json();
+    const { name, email, address, rating } = await req.json();
 
     if (!name || !email || !address) {
       return NextResponse.json({ message: "Missing fields" }, { status: 400 });
     }
+    const existingVendor = await Vendor.findOne({ email });
 
-    const newVendor = await Vendor.create({ name, email, address });
+    if (existingVendor) {
+      return NextResponse.json(
+        { email: "Email already taken" },
+        { status: 422 }
+      );
+    }
+
+    const newVendor = await Vendor.create({ name, email, address, rating });
 
     return NextResponse.json({ vendor: newVendor }, { status: 201 });
   } catch (error) {
