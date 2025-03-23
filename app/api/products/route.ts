@@ -38,7 +38,6 @@ export async function POST(req: NextRequest) {
     const newQuantityPricing = await QuantityPricingModel.insertMany(
       quantityPricing
     );
-    console.log(newDeliverySlots);
     const newAssociation = new VendorProductModel({
       vendor,
       product: newProduct,

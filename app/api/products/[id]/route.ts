@@ -2,7 +2,9 @@ import { connectDB } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import ProductModel from "@/models/Product";
 import VendorProductModel from "@/models/VendorProduct";
-
+import PricingRuleModel from "@/models/PriceRule";
+import DeliverySlotModel from "@/models/DeliverySlot";
+import QuantityPricingModel from "@/models/QuantityPricing";
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -12,10 +14,10 @@ export async function GET(
     const productId = (await params).id;
     // Fetch product by ID
     const productVendor = await VendorProductModel.findOne({
-      productId,
+      product: productId,
     })
-      .populate("productId")
-      .populate("vendorId");
+      .populate("product")
+      .populate("vendor");
     if (!productVendor) {
       return NextResponse.json(
         { message: "Product not found" },
@@ -25,11 +27,11 @@ export async function GET(
 
     return NextResponse.json(
       {
-        _id: productVendor.productId._id,
-        name: productVendor.productId.name,
-        vendor: productVendor.vendorId,
+        _id: productVendor.product._id,
+        name: productVendor.product.name,
+        vendor: productVendor.vendor,
         pricingRules: productVendor.pricingRules,
-        deliveryRules: productVendor.deliveryRules,
+        deliverySlots: productVendor.deliverySlots,
         quantityPricing: productVendor.quantityPricing,
       },
       { status: 200 }
@@ -50,32 +52,50 @@ export async function PUT(
 ) {
   try {
     await connectDB();
-    const productId = (await params).id;
-    const { name, vendorId, pricingRules, deliveryRules, quantityPricing } =
+    const product = (await params).id;
+    const { name, vendor, pricingRules, deliveryRules, quantityPricing } =
       await req.json();
 
     // Validate product exists
-    const existingProduct = await ProductModel.findById(productId);
+    const existingProduct = await ProductModel.findById(product);
     if (!existingProduct) {
       return NextResponse.json(
         { message: "Product not found" },
         { status: 404 }
       );
     }
+    const updatedPricingRules = await PricingRuleModel.insertMany(pricingRules);
+    const updatedDeliverySlots = await DeliverySlotModel.insertMany(
+      deliveryRules
+    );
+    const updatedQuantityPricing = await QuantityPricingModel.insertMany(
+      quantityPricing
+    );
 
     // Update the product
     const updatedProduct = await ProductModel.findByIdAndUpdate(
-      productId,
+      product,
       { $set: { name } },
       { new: true, runValidators: true }
     );
 
-    // Update the vendor association with the product's vendorId
+    // Update the vendor association with the product's vendor
     const association = await VendorProductModel.findOneAndUpdate(
-      { productId },
-      { vendorId, pricingRules, deliveryRules, quantityPricing },
+      { product },
+      {
+        vendor,
+        pricingRules: updatedPricingRules,
+        deliverySlots: updatedDeliverySlots,
+        quantityPricing: updatedQuantityPricing,
+      },
       { new: true, upsert: true }
-    );
+    ).populate([
+      "product",
+      "vendor",
+      "pricingRules",
+      "deliverySlots",
+      "quantityPricing",
+    ]);
 
     return NextResponse.json(
       {
@@ -105,7 +125,7 @@ export async function DELETE(request: NextRequest, { params }) {
     // await VendorModel.deleteMany({});
     // await VendorProductModel.deleteMany({});
     await ProductModel.deleteOne({ _id: id });
-    await VendorProductModel.deleteMany({ productId: id });
+    await VendorProductModel.deleteMany({ product: id });
 
     return NextResponse.json(
       { message: "Product deleted successfully" },
