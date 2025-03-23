@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import dotenv from "dotenv";
 import ProductModel from "@/models/Product";
+import PricingRuleModel from "@/models/PriceRule";
+import DeliverySlotModel from "@/models/DeliverySlot";
+import QuantityPricingModel from "@/models/QuantityPricing";
 import VendorModel from "@/models/Vendor";
 import VendorProductModel from "@/models/VendorProduct";
 import { connectDB } from "@lib/db";
@@ -29,15 +32,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const newProduct = new ProductModel({ name });
-    await newProduct.save();
-
+    const newProduct = await ProductModel.create({ name });
+    const newPricingRules = await PricingRuleModel.insertMany(pricingRules);
+    const newDeliverySlots = await DeliverySlotModel.insertMany(deliveryRules);
+    const newQuantityPricing = await QuantityPricingModel.insertMany(
+      quantityPricing
+    );
+    console.log(newDeliverySlots);
     const newAssociation = new VendorProductModel({
-      vendorId,
-      productId: newProduct._id,
-      pricingRules,
-      deliveryRules,
-      quantityPricing,
+      vendor,
+      product: newProduct,
+      pricingRules: newPricingRules,
+      deliverySlots: newDeliverySlots,
+      quantityPricing: newQuantityPricing,
     });
     await newAssociation.save();
 
