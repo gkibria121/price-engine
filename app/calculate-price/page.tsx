@@ -1,8 +1,10 @@
 "use client";
-import { useState } from "react";
+import { Product } from "@/lib/api";
+import { useEffect, useState } from "react";
 
 export default function SimplifiedPriceCalculator() {
   const [productId, setProductId] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
   const [quantity, setQuantity] = useState(20);
   const [attributes, setAttributes] = useState([
     { name: "Paper", value: "Glossy" },
@@ -11,6 +13,20 @@ export default function SimplifiedPriceCalculator() {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/products`
+      );
+
+      if (!response.ok) throw new Error("Something went wrong!");
+      const data = await response.json();
+      console.log(data);
+      setProducts(data);
+    };
+    fetchProducts();
+  }, []);
 
   const handleAttributeChange = (index, field, value) => {
     const updatedAttributes = [...attributes];
@@ -77,14 +93,21 @@ export default function SimplifiedPriceCalculator() {
           <label htmlFor="productId" className="block text-sm font-medium mb-1">
             Product ID
           </label>
-          <input
+          <select
             id="productId"
-            type="text"
-            placeholder="Enter product ID"
+            className="w-full border p-2 rounded"
             value={productId}
             onChange={(e) => setProductId(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
+          >
+            <option value="" disabled>
+              Select a product
+            </option>
+            {products.map((product) => (
+              <option key={product._id} value={product._id}>
+                {product.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Quantity */}
