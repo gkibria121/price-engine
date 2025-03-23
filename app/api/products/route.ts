@@ -67,14 +67,17 @@ export async function GET() {
     await connectDB();
 
     const vendorProducts = await VendorProductModel.find()
-      .populate("vendorId")
-      .populate("productId");
+      .populate("vendor")
+      .populate("pricingRules")
+      .populate("deliverySlots")
+      .populate("quantityPricing")
+      .populate("product");
 
     const products = vendorProducts.map((vp) => ({
-      ...vp.productId.toObject(),
-      vendor: vp.vendorId,
+      ...vp.product.toObject(),
+      vendor: vp.vendor,
       pricingRules: vp.pricingRules,
-      deliveryRules: vp.deliveryRules,
+      deliverySlots: vp.deliverySlots,
       quantityPricing: vp.quantityPricing,
     }));
 
