@@ -3,27 +3,39 @@ import PriceCalculationRequest from "@/lib/PriceCalculationRequest";
 import PricingEngine from "@/lib/PricingEngine";
 import ProductModel from "@/models/Product";
 import VendorProduct from "@/models/VendorProduct";
+import { getVendor } from "@/services/VendorService";
 import Attribute from "@/utils/Attribute";
 import DeliveryRule from "@/utils/DeliveryRule";
 import PricingRule from "@/utils/PricingRule";
 import Product from "@/utils/Product";
 import QuantityPricing from "@/utils/QuantityPricing";
+import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 
 // Calculate Product Price
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { productId, vendorId, quantity, attributes, deliveryMethod } =
+    const { productId, quantity, attributes, deliveryMethod, currentTime } =
       await req.json();
 
-    if (!productId || !vendorId || !quantity) {
+    if (!productId || !quantity) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 }
       );
     }
+    const vendor = await getVendor(
+      productId,
+      attributes,
+      deliveryMethod,
+      currentTime
+    );
+    return NextResponse.json({
+      vendor,
+    });
 
+    const vendorId = new mongoose.mongo.ObjectId();
     const vendorProduct = await VendorProduct.findOne({
       product: productId,
       vendor: vendorId,
