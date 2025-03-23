@@ -2,43 +2,83 @@ import mongoose from "mongoose";
 import VendorProduct from "@/models/VendorProduct";
 
 export async function getVendor(
-  productId: mongoose.Schema.Types.ObjectId,
+  productId: string,
   attributes: { name: string; value: string }[],
   deliveryMethod: string,
   currentTime: mongoose.Schema.Types.Date
 ) {
-  console.log(productId, attributes, deliveryMethod, currentTime);
-
+  console.log(deliveryMethod, currentTime);
   try {
+    // Create match conditions for each attribute-value pair
+    const attributeConditions = attributes.map((attr) => ({
+      attribute: attr.name,
+      value: attr.value,
+    }));
+    // Ensure currentTime is a Date object for proper comparison
+    const currentTimeDate =
+      typeof currentTime === "string" ? new Date(currentTime) : currentTime;
     const pipeline = [
       {
         $match: {
-          product: new mongoose.Types.ObjectId("67dfa64d07e01cd68052c092"),
+          product: new mongoose.Types.ObjectId(productId),
         },
       },
       {
         $lookup: {
           from: "pricingrules",
-          localField: "pricingRules", // VendorProduct.pricingRules array of ObjectIds
-          foreignField: "_id", // PricingRule._id
-          as: "pricingRulesData", // The result will be stored in this field
+          localField: "pricingRules",
+          foreignField: "_id",
+          as: "pricingRulesData",
         },
       },
       {
+        $lookup: {
+          from: "deliveryslots",
+          localField: "deliverySlots",
+          foreignField: "_id",
+          as: "deliverySlotsData",
+        },
+      },
+      {
+        $lookup: {
+          from: "vendors",
+          localField: "vendor",
+          foreignField: "_id",
+          as: "vendorData",
+        },
+      },
+      {
+        $unwind: "$vendorData",
+      },
+      {
         $match: {
-          pricingRulesData: {
-            $elemMatch: {
-              attribute: attributes[0]?.name,
-              value: attributes[0]?.value,
+          $and: [
+            ...attributeConditions.map((condition) => ({
+              pricingRulesData: {
+                $elemMatch: condition,
+              },
+            })),
+            {
+              deliverySlotsData: {
+                $elemMatch: {
+                  label: deliveryMethod,
+                  cutoffTime: { $gt: currentTimeDate },
+                },
+              },
             },
-          },
+          ],
+        },
+      },
+      {
+        $sort: {
+          "vendorData.rating": -1,
         },
       },
     ];
 
-    const vendor = await VendorProduct.aggregate(pipeline);
-    console.log(vendor);
-    return vendor;
+    const vendors = await VendorProduct.aggregate(pipeline);
+
+    return vendors.length > 0 ? vendors[0].vendorData : null;
   } catch (error) {
     console.error("Error fetching vendor:", error);
     return null;

@@ -9,7 +9,7 @@ import DeliveryRule from "@/utils/DeliveryRule";
 import PricingRule from "@/utils/PricingRule";
 import Product from "@/utils/Product";
 import QuantityPricing from "@/utils/QuantityPricing";
-import mongoose from "mongoose";
+
 import { NextRequest, NextResponse } from "next/server";
 
 // Calculate Product Price
@@ -31,11 +31,15 @@ export async function POST(req: NextRequest) {
       deliveryMethod,
       currentTime
     );
-    return NextResponse.json({
-      vendor,
-    });
+    if (!vendor) {
+      return NextResponse.json(
+        { message: "Vendor not found!" },
+        { status: 404 }
+      );
+    }
 
-    const vendorId = new mongoose.mongo.ObjectId();
+    const vendorId = vendor._id;
+    console.log(vendorId);
     const vendorProduct = await VendorProduct.findOne({
       product: productId,
       vendor: vendorId,
