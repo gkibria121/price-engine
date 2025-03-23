@@ -135,7 +135,10 @@ export default function ProductsPage() {
                 >
                   Edit
                 </Link>
-                <DeleteProduct id={vendorProduct._id} />
+                <DeleteProduct
+                  prefix="/api/vendor-products/"
+                  id={vendorProduct._id}
+                />
               </div>
               <h2 className="text-lg mb-2">{vendorProduct.vendor.name}</h2>
               <div className="text-sm text-gray-600">

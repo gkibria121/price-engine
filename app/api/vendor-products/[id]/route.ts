@@ -1,6 +1,5 @@
 import { connectDB } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import ProductModel from "@/models/Product";
 import VendorProductModel from "@/models/VendorProduct";
 import PricingRuleModel from "@/models/PriceRule";
 import DeliverySlotModel from "@/models/DeliverySlot";
@@ -129,19 +128,45 @@ export async function DELETE(request: NextRequest, { params }) {
   try {
     await connectDB();
     const { id } = await params;
-    // await VendorModel.deleteMany({});
-    // await VendorProductModel.deleteMany({});
-    await ProductModel.deleteOne({ _id: id });
-    await VendorProductModel.deleteMany({ product: id });
+
+    // Find all vendor products associated with the given product ID
+    const vendorProducts = await VendorProductModel.find({ _id: id });
+
+    if (!vendorProducts.length) {
+      return NextResponse.json(
+        { message: "No associated products found" },
+        { status: 404 }
+      );
+    }
+
+    // Collect all related IDs to delete
+    const pricingRuleIds = vendorProducts.flatMap((vp) => vp.pricingRules);
+    const deliverySlotIds = vendorProducts.flatMap((vp) => vp.deliverySlots);
+    const quantityPricingIds = vendorProducts.flatMap(
+      (vp) => vp.quantityPricing
+    );
+
+    // Delete associated records
+    if (pricingRuleIds.length)
+      await PricingRuleModel.deleteMany({ _id: { $in: pricingRuleIds } });
+    if (deliverySlotIds.length)
+      await DeliverySlotModel.deleteMany({ _id: { $in: deliverySlotIds } });
+    if (quantityPricingIds.length)
+      await QuantityPricingModel.deleteMany({
+        _id: { $in: quantityPricingIds },
+      });
+
+    // Delete vendor product entries
+    await VendorProductModel.deleteMany({ _id: id });
 
     return NextResponse.json(
-      { message: "Product deleted successfully" },
+      { message: "Product and associated data deleted successfully" },
       { status: 200 }
     );
   } catch (error: unknown) {
     console.error("❌ Error:", error);
     return NextResponse.json(
-      { message: "Internal server error", error: error },
+      { message: "Internal server error", error },
       { status: 500 }
     );
   }
