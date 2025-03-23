@@ -69,14 +69,16 @@ export async function getVendor(
           ],
         },
       },
+    ];
+
+    const vendors = await VendorProduct.aggregate([
+      ...pipeline,
       {
         $sort: {
           "vendorData.rating": -1,
         },
       },
-    ];
-
-    const vendors = await VendorProduct.aggregate(pipeline);
+    ]);
 
     return vendors.length > 0 ? vendors[0].vendorData : null;
   } catch (error) {
