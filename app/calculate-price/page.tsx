@@ -1,10 +1,13 @@
 "use client";
-import { Product } from "@/lib/api";
+import { Product, VendorProduct } from "@/lib/api";
 import { useEffect, useState } from "react";
 
 export default function SimplifiedPriceCalculator() {
   const [productId, setProductId] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [vendorProduct, setVendorProduct] = useState<VendorProduct[] | null>(
+    null
+  );
   const [quantity, setQuantity] = useState(20);
   const [attributes, setAttributes] = useState([
     { name: "Paper", value: "Glossy" },
@@ -22,11 +25,23 @@ export default function SimplifiedPriceCalculator() {
 
       if (!response.ok) throw new Error("Something went wrong!");
       const data = await response.json();
-      console.log(data);
       setProducts(data);
     };
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    const fetchVendorProduct = async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}/vendor-products`
+      );
+
+      if (!response.ok) throw new Error("Something went wrong!");
+      const data = await response.json();
+      setVendorProduct(data);
+    };
+    if (productId) fetchVendorProduct();
+  }, [productId]);
 
   const handleAttributeChange = (index, field, value) => {
     const updatedAttributes = [...attributes];
@@ -79,6 +94,33 @@ export default function SimplifiedPriceCalculator() {
     }
   };
 
+  const availablePricingRules = vendorProduct?.flatMap((el) => el.pricingRules);
+  const pricingRuleOptions = availablePricingRules?.reduce(
+    (acc, curr): { attribute: string; values: string[] }[] => {
+      if (acc.some((option) => option.attribute === curr.attribute)) {
+        return [
+          ...acc.map((el) =>
+            el.attribute === curr.attribute
+              ? {
+                  attribute: curr.attribute,
+                  values: [...el.values, curr.value],
+                }
+              : el
+          ),
+        ];
+      }
+      return [...acc, { attribute: curr.attribute, values: [curr.value] }];
+    },
+    [] as { attribute: string; values: string[] }[]
+  );
+
+  const availableDeliveryMethods = vendorProduct?.flatMap(
+    (el) => el.deliverySlots
+  );
+
+  console.log(availableDeliveryMethods);
+
+  console.log(pricingRuleOptions);
   return (
     <div className="p-4 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Simplified Price Calculator</h1>
