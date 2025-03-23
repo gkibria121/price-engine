@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import ProductForm from "@/components/ProductForm";
-import { Product } from "@/lib/api";
+import { Product, getProductById } from "@/lib/api";
 import ProductFormJson from "@/components/ProductFormJson";
 
 export default function AddProductPage() {
@@ -16,11 +16,7 @@ export default function AddProductPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}`
-        );
-        if (!response.ok) throw new Error("Product not found!");
-        const data = await response.json();
+        const data = await getProductById(id as string);
         setProduct(data);
         setLoading(false);
       } catch (err) {
@@ -38,10 +34,7 @@ export default function AddProductPage() {
 
   if (loading) return <div className="text-center p-8">Loading...</div>;
   if (error) return <div className="text-center p-8 text-red-500">{error}</div>;
-  if (!product)
-    return (
-      <div className="text-center p-8 text-red-500">Product not found</div>
-    );
+  if (!product) return <div className="text-center p-8 text-red-500">Product not found</div>;
   return (
     <div>
       <div className="flex justify-between">
@@ -60,11 +53,7 @@ export default function AddProductPage() {
         </div>
       </div>
       {formType === "form" && (
-        <ProductForm
-          onSuccess={handleSuccess}
-          isEdit={true}
-          product={product}
-        />
+        <ProductForm vendors={[]} onSuccess={handleSuccess} isEdit={true} product={product} />
       )}
       {formType === "json" && (
         <>

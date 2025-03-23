@@ -22,6 +22,7 @@ export default function VendorForm({ onSuccess, onCancel }: VendorFormProps) {
       name: "",
       email: "",
       address: "",
+      rating: 0,
     },
   });
 
@@ -42,7 +43,9 @@ export default function VendorForm({ onSuccess, onCancel }: VendorFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
-      {error && <div className="p-4 bg-red-50 text-red-600 rounded-md">{error}</div>}
+      {error && (
+        <div className="p-4 bg-red-50 text-red-600 rounded-md">{error}</div>
+      )}
 
       <div>
         <label className="block mb-1">Vendor Name</label>
@@ -50,7 +53,9 @@ export default function VendorForm({ onSuccess, onCancel }: VendorFormProps) {
           {...register("name", { required: "Vendor name is required" })}
           className="w-full border rounded p-2"
         />
-        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>}
+        {errors.name && (
+          <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+        )}
       </div>
 
       <div>
@@ -66,16 +71,33 @@ export default function VendorForm({ onSuccess, onCancel }: VendorFormProps) {
           })}
           className="w-full border rounded p-2"
         />
-        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+        )}
       </div>
-
+      <div>
+        <label className="block mb-1">Rating</label>
+        <input
+          type="number"
+          {...register("rating", {
+            required: "Rating is required",
+            min: 0,
+          })}
+          className="w-full border rounded p-2"
+        />
+        {errors.rating && (
+          <p className="text-red-500 text-sm mt-1">{errors.rating.message}</p>
+        )}
+      </div>
       <div>
         <label className="block mb-1">Address</label>
         <textarea
           {...register("address", { required: "Address is required" })}
           className="w-full border rounded p-2 h-24"
         />
-        {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>}
+        {errors.address && (
+          <p className="text-red-500 text-sm mt-1">{errors.address.message}</p>
+        )}
       </div>
 
       <div className="flex justify-end gap-4">

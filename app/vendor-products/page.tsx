@@ -36,7 +36,7 @@ export default function ProductsPage() {
     const fetchVendorProducts = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/vendor-products`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/products`
         );
         if (!response.ok) {
           throw new Error("Something went wrong!");
@@ -103,7 +103,7 @@ export default function ProductsPage() {
       <div className="flex justify-between items-center mb-6 mt-10">
         <h1 className="text-3xl font-bold">Vendor Products</h1>
         <Link
-          href="/vendor-products/add"
+          href="/products/add"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           Add New Vendor Product
@@ -125,7 +125,7 @@ export default function ProductsPage() {
               className="border rounded-lg p-6 hover:shadow-lg transition  "
             >
               <div className="flex  justify-between">
-                <h2 className="text-xl font-semibold mb-1">
+                {/* <h2 className="text-xl font-semibold mb-2">
                   {vendorProduct.product.name}
                 </h2>
                 <Link
@@ -135,13 +135,7 @@ export default function ProductsPage() {
                 >
                   Edit
                 </Link>
-                <DeleteProduct id={vendorProduct._id} />
-              </div>
-              <h2 className="text-lg mb-2">{vendorProduct.vendor.name}</h2>
-              <div className="text-sm text-gray-600">
-                <p>{vendorProduct.pricingRules.length} pricing rules</p>
-                <p>{vendorProduct.deliverySlots.length} delivery options</p>
-                <p>{vendorProduct.quantityPricing.length} quantity tiers</p>
+                <DeleteProduct id={vendorProduct._id} /> */}
               </div>
             </div>
           ))}

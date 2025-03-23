@@ -15,8 +15,14 @@ const DeliverySlotSchema = new Schema({
     required: [true, "Delivery start date is required"],
   },
   deliveryTimeStartTime: {
-    type: Schema.Types.Date,
+    type: String,
     required: true,
+    validate: {
+      validator: function (v) {
+        return /^\d{1,2}:\d{2}$/.test(v); // Ensures format is "HH:MM"
+      },
+      message: (props) => `${props.value} is not a valid time format (HH:MM)!`,
+    },
   },
   deliveryTimeEndDate: {
     type: Number,
@@ -24,13 +30,25 @@ const DeliverySlotSchema = new Schema({
     required: [true, "Delivery start date is required"],
   },
   deliveryTimeEndTime: {
-    type: Schema.Types.Date,
+    type: String,
     required: true,
+    validate: {
+      validator: function (v) {
+        return /^\d{1,2}:\d{2}$/.test(v); // Ensures format is "HH:MM"
+      },
+      message: (props) => `${props.value} is not a valid time format (HH:MM)!`,
+    },
   },
 
   cutoffTime: {
-    type: Schema.Types.Date,
+    type: String,
     required: true,
+    validate: {
+      validator: function (v) {
+        return /^\d{1,2}:\d{2}$/.test(v); // Ensures format is "HH:MM"
+      },
+      message: (props) => `${props.value} is not a valid time format (HH:MM)!`,
+    },
   },
 });
 

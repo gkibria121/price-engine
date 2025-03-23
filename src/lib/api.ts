@@ -22,8 +22,12 @@ export interface QuantityPricing {
 export interface Product {
   _id?: string;
   name: string;
+}
+export interface VendorProduct {
+  _id?: string;
+  product: Product;
   pricingRules: PricingRule[];
-  deliveryRules: DeliveryRule[];
+  deliverySlots: DeliveryRule[];
   quantityPricing: QuantityPricing[];
   vendor: Vendor;
 }
@@ -34,6 +38,7 @@ export interface Vendor {
   name: string;
   email: string;
   address: string;
+  rating: number;
 }
 
 // API functions for Products
@@ -58,6 +63,14 @@ export const createProduct = async (
   return response.data;
 };
 
+export const createVendorProduct = async (
+  vendorProduct: VendorProduct
+): Promise<Product> => {
+  const response = await axios.post(`${API_URL}/api/vendor-products`, {
+    ...vendorProduct,
+  });
+  return response.data;
+};
 export const updateProduct = async (
   id: string,
   product: Product
