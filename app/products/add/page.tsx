@@ -38,7 +38,9 @@ export default function AddProductPage() {
     return (
       <div className="text-center p-8 bg-gray-50 rounded-lg">
         <h1 className="text-3xl font-bold mb-4">Add New Product</h1>
-        <p className="mb-4">You need to create a vendor before adding products.</p>
+        <p className="mb-4">
+          You need to create a vendor before adding products.
+        </p>
         <button
           onClick={() => router.push("/vendors/add")}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -52,7 +54,7 @@ export default function AddProductPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-6">Add New Product</h1>
-      <ProductForm vendors={vendors} onSuccess={handleSuccess} />
+      <ProductForm onSuccess={handleSuccess} />
     </div>
   );
 }
