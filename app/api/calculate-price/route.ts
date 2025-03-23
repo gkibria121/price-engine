@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const { productId, quantity, attributes, deliveryMethod, currentTime } =
       await req.json();
-
+    console.log(productId, quantity, attributes, deliveryMethod, currentTime);
     if (!productId || !quantity) {
       return NextResponse.json(
         { message: "Missing required fields" },

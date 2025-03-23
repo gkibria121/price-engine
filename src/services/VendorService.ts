@@ -5,9 +5,8 @@ export async function getVendor(
   productId: string,
   attributes: { name: string; value: string }[],
   deliveryMethod: string,
-  currentTime: mongoose.Schema.Types.Date
+  currentTime: Date
 ) {
-  console.log(deliveryMethod, currentTime);
   try {
     // Create match conditions for each attribute-value pair
     const attributeConditions = attributes.map((attr) => ({
@@ -17,6 +16,10 @@ export async function getVendor(
     // Ensure currentTime is a Date object for proper comparison
     const currentTimeDate =
       typeof currentTime === "string" ? new Date(currentTime) : currentTime;
+
+    // Get current time components for time comparison
+    const currentHour = currentTimeDate.getHours();
+    const currentMinute = currentTimeDate.getMinutes();
     const pipeline = [
       {
         $match: {
@@ -51,6 +54,29 @@ export async function getVendor(
         $unwind: "$vendorData",
       },
       {
+        $addFields: {
+          deliverySlotsWithTime: {
+            $map: {
+              input: "$deliverySlotsData",
+              as: "slot",
+              in: {
+                $mergeObjects: [
+                  "$$slot",
+                  {
+                    cutoffTimeHour: {
+                      $toInt: { $substr: ["$$slot.cutoffTime", 0, 2] },
+                    },
+                    cutoffTimeMinute: {
+                      $toInt: { $substr: ["$$slot.cutoffTime", 3, 2] },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
         $match: {
           $and: [
             ...attributeConditions.map((condition) => ({
@@ -59,10 +85,18 @@ export async function getVendor(
               },
             })),
             {
-              deliverySlotsData: {
+              deliverySlotsWithTime: {
                 $elemMatch: {
                   label: deliveryMethod,
-                  cutoffTime: { $gt: currentTimeDate },
+                  $or: [
+                    { cutoffTimeHour: { $gt: currentHour } },
+                    {
+                      $and: [
+                        { cutoffTimeHour: currentHour },
+                        { cutoffTimeMinute: { $gt: currentMinute } },
+                      ],
+                    },
+                  ],
                 },
               },
             },
