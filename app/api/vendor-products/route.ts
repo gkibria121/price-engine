@@ -18,10 +18,17 @@ export async function POST(req: NextRequest) {
       vendorId,
       productId,
       pricingRules,
-      deliveryRules,
+      deliverySlots,
       quantityPricing,
     } = await req.json();
 
+    console.log(
+      vendorId,
+      productId,
+      pricingRules,
+      deliverySlots,
+      quantityPricing
+    );
     if (!vendorId) {
       return NextResponse.json(
         { message: "Vendor ID is required" },
@@ -39,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     const product = await ProductModel.findOne({ _id: productId });
     const newPricingRules = await PricingRuleModel.insertMany(pricingRules);
-    const newDeliverySlots = await DeliverySlotModel.insertMany(deliveryRules);
+    const newDeliverySlots = await DeliverySlotModel.insertMany(deliverySlots);
     const newQuantityPricing = await QuantityPricingModel.insertMany(
       quantityPricing
     );

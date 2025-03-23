@@ -129,7 +129,7 @@ export default function ProductsPage() {
                   {vendorProduct.product.name}
                 </h2>
                 <Link
-                  href={`/products/edit/${vendorProduct._id}`}
+                  href={`/vendor-products/edit/${vendorProduct._id}`}
                   key={vendorProduct._id}
                   className="bg-blue-600 px-2 py-1 rounded-md text-white mr-2 ml-auto"
                 >

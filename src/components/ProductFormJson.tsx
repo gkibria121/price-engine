@@ -1,14 +1,22 @@
-import { Product, updateProduct } from "@/lib/api";
+import { updateProduct, VendorProduct } from "@/lib/api";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
-function ProductFormJson({ product, onSuccess }: { product: Product; onSuccess: () => void }) {
+function ProductFormJson({
+  vendorProduct,
+  onSuccess,
+}: {
+  vendorProduct: VendorProduct;
+  onSuccess: () => void;
+}) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [jsonValue, setJsonValue] = useState(JSON.stringify(product, null, 2));
+  const [jsonValue, setJsonValue] = useState(
+    JSON.stringify(vendorProduct, null, 2)
+  );
 
-  const { handleSubmit } = useForm({ defaultValues: product });
-  if (!product) return <div>No product found!</div>;
+  const { handleSubmit } = useForm({ defaultValues: vendorProduct });
+  if (!vendorProduct) return <div>No product found!</div>;
   const handleUpdate = () => {
     try {
       // Ensure trimmed JSON is valid before parsing
@@ -25,7 +33,10 @@ function ProductFormJson({ product, onSuccess }: { product: Product; onSuccess: 
   const onSubmit = async () => {
     try {
       setSubmitting(true);
-      await updateProduct(product._id as string, JSON.parse(jsonValue.trim()));
+      await updateProduct(
+        vendorProduct._id as string,
+        JSON.parse(jsonValue.trim())
+      );
       if (onSuccess) onSuccess();
     } catch (e) {
       console.log(e);

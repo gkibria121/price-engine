@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import ProductForm from "@/components/ProductForm";
-import { Product, getProductById } from "@/lib/api";
+import { VendorProduct } from "@/lib/api";
 import ProductFormJson from "@/components/ProductFormJson";
+import VendorProductForm from "@/components/VendorProductForm";
 
 export default function AddProductPage() {
   const [loading, setLoading] = useState(true);
@@ -12,12 +12,18 @@ export default function AddProductPage() {
   const router = useRouter();
   const { id } = useParams();
   const [formType, setFormType] = useState<"form" | "json">("form");
-  const [product, setProduct] = useState<Product | undefined>();
+  const [vendorProduct, setVendorProduct] = useState<
+    VendorProduct | undefined
+  >();
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const data = await getProductById(id as string);
-        setProduct(data);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/vendor-products/${id}`
+        );
+        if (!response.ok) throw new Error("Product not found!");
+        const data = await response.json();
+        setVendorProduct(data);
         setLoading(false);
       } catch (err) {
         setError("Failed to load product");
@@ -34,7 +40,10 @@ export default function AddProductPage() {
 
   if (loading) return <div className="text-center p-8">Loading...</div>;
   if (error) return <div className="text-center p-8 text-red-500">{error}</div>;
-  if (!product) return <div className="text-center p-8 text-red-500">Product not found</div>;
+  if (!vendorProduct)
+    return (
+      <div className="text-center p-8 text-red-500">Product not found</div>
+    );
   return (
     <div>
       <div className="flex justify-between">
@@ -53,11 +62,20 @@ export default function AddProductPage() {
         </div>
       </div>
       {formType === "form" && (
-        <ProductForm vendors={[]} onSuccess={handleSuccess} isEdit={true} product={product} />
+        <VendorProductForm
+          vendors={[]}
+          products={[]}
+          onSuccess={handleSuccess}
+          isEdit={true}
+          vendorProduct={vendorProduct}
+        />
       )}
       {formType === "json" && (
         <>
-          <ProductFormJson onSuccess={handleSuccess} product={product} />
+          <ProductFormJson
+            onSuccess={handleSuccess}
+            vendorProduct={vendorProduct}
+          />
         </>
       )}
     </div>

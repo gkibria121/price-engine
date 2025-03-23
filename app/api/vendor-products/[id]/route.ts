@@ -11,13 +11,18 @@ export async function GET(
 ) {
   try {
     await connectDB();
-    const productId = (await params).id;
+    const vendorProductId = (await params).id;
     // Fetch product by ID
     const productVendor = await VendorProductModel.findOne({
-      product: productId,
-    })
-      .populate("product")
-      .populate("vendor");
+      _id: vendorProductId,
+    }).populate([
+      "product",
+      "vendor",
+      "pricingRules",
+      "quantityPricing",
+      "deliverySlots",
+    ]);
+
     if (!productVendor) {
       return NextResponse.json(
         { message: "Product not found" },
@@ -27,7 +32,7 @@ export async function GET(
 
     return NextResponse.json(
       {
-        _id: productVendor.product._id,
+        _id: productVendor._id,
         name: productVendor.product.name,
         vendor: productVendor.vendor,
         pricingRules: productVendor.pricingRules,
@@ -52,43 +57,47 @@ export async function PUT(
 ) {
   try {
     await connectDB();
-    const product = (await params).id;
-    const { name, vendor, pricingRules, deliveryRules, quantityPricing } =
-      await req.json();
-
+    const vendorProductId = (await params).id;
+    const { pricingRules, deliverySlots, quantityPricing } = await req.json();
+    console.log(vendorProductId);
     // Validate product exists
-    const existingProduct = await ProductModel.findById(product);
-    if (!existingProduct) {
+    const vendorProduct = await VendorProductModel.findById(vendorProductId);
+    if (!vendorProduct) {
       return NextResponse.json(
-        { message: "Product not found" },
+        { message: "Vendor Product not found" },
         { status: 404 }
       );
     }
+
+    // Remove previous values
+    await PricingRuleModel.deleteMany({
+      _id: { $in: vendorProduct.pricingRules },
+    });
+    await DeliverySlotModel.deleteMany({
+      _id: { $in: vendorProduct.deliverySlots },
+    });
+    await QuantityPricingModel.deleteMany({
+      _id: { $in: vendorProduct.quantityPricing },
+    });
+
+    // Insert new values
     const updatedPricingRules = await PricingRuleModel.insertMany(pricingRules);
     const updatedDeliverySlots = await DeliverySlotModel.insertMany(
-      deliveryRules
+      deliverySlots
     );
     const updatedQuantityPricing = await QuantityPricingModel.insertMany(
       quantityPricing
     );
 
-    // Update the product
-    const updatedProduct = await ProductModel.findByIdAndUpdate(
-      product,
-      { $set: { name } },
-      { new: true, runValidators: true }
-    );
-
-    // Update the vendor association with the product's vendor
-    const association = await VendorProductModel.findOneAndUpdate(
-      { product },
+    // Update vendorProduct with new associations
+    const updatedVendorProduct = await VendorProductModel.findByIdAndUpdate(
+      vendorProductId,
       {
-        vendor,
-        pricingRules: updatedPricingRules,
-        deliverySlots: updatedDeliverySlots,
-        quantityPricing: updatedQuantityPricing,
+        pricingRules: updatedPricingRules.map((rule) => rule._id),
+        deliverySlots: updatedDeliverySlots.map((slot) => slot._id),
+        quantityPricing: updatedQuantityPricing.map((price) => price._id),
       },
-      { new: true, upsert: true }
+      { new: true }
     ).populate([
       "product",
       "vendor",
@@ -100,8 +109,7 @@ export async function PUT(
     return NextResponse.json(
       {
         message: "Product updated successfully",
-        product: updatedProduct,
-        association: association,
+        vendorProduct: updatedVendorProduct,
       },
       { status: 200 }
     );
@@ -116,7 +124,6 @@ export async function PUT(
     );
   }
 }
-
 // Clear Database
 export async function DELETE(request: NextRequest, { params }) {
   try {

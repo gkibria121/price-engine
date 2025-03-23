@@ -66,6 +66,7 @@ export const createProduct = async (
 export const createVendorProduct = async (
   vendorProduct: VendorProduct
 ): Promise<Product> => {
+  console.log(vendorProduct);
   const response = await axios.post(`${API_URL}/api/vendor-products`, {
     ...vendorProduct,
   });
@@ -78,7 +79,15 @@ export const updateProduct = async (
   const response = await axios.put(`${API_URL}/api/products/${id}`, product);
   return response.data;
 };
-
+export const updateVendorProduct = async (
+  vendorProduct: VendorProduct
+): Promise<Product> => {
+  const response = await axios.put(
+    `${API_URL}/api/vendor-products/${vendorProduct._id}`,
+    vendorProduct
+  );
+  return response.data;
+};
 // API functions for Vendors
 export const getVendors = async (): Promise<Vendor[]> => {
   const response = await axios.get(`${API_URL}/api/vendors`);

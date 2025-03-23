@@ -7,13 +7,13 @@ import {
   Vendor,
   VendorProduct,
   createVendorProduct,
-  updateProduct,
+  updateVendorProduct,
 } from "@/lib/api";
 
 interface ProductFormProps {
-  products: Product[];
+  products?: Product[];
   vendorProduct?: VendorProduct;
-  vendors: Vendor[];
+  vendors?: Vendor[];
   onSuccess?: () => void;
   isEdit?: boolean;
 }
@@ -29,9 +29,8 @@ export default function VendorProductForm({
   const [error, setError] = useState("");
 
   const defaultValues: any = vendorProduct || {
-    name: "",
     pricingRules: [{ attribute: "", value: "", price: 0 }],
-    deliveryRules: [{ method: "Standard", price: 0 }],
+    deliverySlots: [{ method: "Standard", price: 0 }],
     quantityPricing: [{ minQty: 1, price: 0 }],
   };
 
@@ -52,7 +51,7 @@ export default function VendorProductForm({
     fields: deliveryFields,
     append: appendDelivery,
     remove: removeDelivery,
-  } = useFieldArray({ control, name: "deliveryRules" });
+  } = useFieldArray({ control, name: "deliverySlots" });
 
   const {
     fields: quantityFields,
@@ -63,13 +62,13 @@ export default function VendorProductForm({
   const onSubmit = async (data: any) => {
     setSubmitting(true);
     setError("");
-
+    console.log(data);
     try {
       if (isEdit && vendorProduct?._id) {
-        await updateProduct(vendorProduct._id, data);
+        await updateVendorProduct(data);
       } else {
         // For new products, we need a vendorId
-
+        console.log(data);
         await createVendorProduct(data);
       }
 
@@ -92,13 +91,13 @@ export default function VendorProductForm({
         <h2 className="text-xl font-semibold">Basic Information</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {!isEdit && (
+          {!isEdit && products && vendors && (
             <>
               <div>
                 <label className="block mb-1">Product</label>
                 <select
                   {...register("productId", {
-                    required: "Product is required",
+                    required: "Vendor Product is required",
                   })}
                   className="w-full border rounded p-2"
                 >
@@ -228,7 +227,7 @@ export default function VendorProductForm({
               <div>
                 <label className="block mb-1 text-sm">Label</label>
                 <input
-                  {...register(`deliveryRules.${index}.label` as const, {
+                  {...register(`deliverySlots.${index}.label` as const, {
                     required: "Required",
                   })}
                   className="w-full border rounded p-2"
@@ -240,7 +239,7 @@ export default function VendorProductForm({
                 <input
                   type="number"
                   step="0.01"
-                  {...register(`deliveryRules.${index}.price` as const, {
+                  {...register(`deliverySlots.${index}.price` as const, {
                     required: "Required",
                     valueAsNumber: true,
                   })}
@@ -257,7 +256,7 @@ export default function VendorProductForm({
                   min="0"
                   max="10"
                   {...register(
-                    `deliveryRules.${index}.deliveryTimeStartDate` as const,
+                    `deliverySlots.${index}.deliveryTimeStartDate` as const,
                     {
                       required: "Required",
                       valueAsNumber: true,
@@ -271,7 +270,7 @@ export default function VendorProductForm({
                 <input
                   type="time"
                   {...register(
-                    `deliveryRules.${index}.deliveryTimeStartTime` as const,
+                    `deliverySlots.${index}.deliveryTimeStartTime` as const,
                     {
                       required: "Required",
                     }
@@ -289,7 +288,7 @@ export default function VendorProductForm({
                   min="0"
                   max="30"
                   {...register(
-                    `deliveryRules.${index}.deliveryTimeEndDate` as const,
+                    `deliverySlots.${index}.deliveryTimeEndDate` as const,
                     {
                       required: "Required",
                       valueAsNumber: true,
@@ -303,7 +302,7 @@ export default function VendorProductForm({
                 <input
                   type="time"
                   {...register(
-                    `deliveryRules.${index}.deliveryTimeEndTime` as const,
+                    `deliverySlots.${index}.deliveryTimeEndTime` as const,
                     {
                       required: "Required",
                     }
@@ -317,7 +316,7 @@ export default function VendorProductForm({
               <label className="block mb-1 text-sm">Cutoff Time</label>
               <input
                 type="time"
-                {...register(`deliveryRules.${index}.cutoffTime` as const, {
+                {...register(`deliverySlots.${index}.cutoffTime` as const, {
                   required: "Required",
                 })}
                 className="w-full border rounded p-2"
