@@ -25,9 +25,13 @@ export async function POST(req: NextRequest) {
     }
 
     const vendorProduct = await VendorProduct.findOne({
-      productId,
-      vendorId,
-    }).populate("productId");
+      product: productId,
+      vendor: vendorId,
+    })
+      .populate("product")
+      .populate("quantityPricing")
+      .populate("pricingRules")
+      .populate("deliverySlots");
 
     if (!vendorProduct) {
       return NextResponse.json(
@@ -49,13 +53,13 @@ export async function POST(req: NextRequest) {
         (rule: { attribute: string; value: string; price: number }) =>
           new PricingRule(rule.attribute, rule.value, rule.price)
       ),
-      vendorProduct.deliveryRules.map(
-        (rule: { method: string; price: number }) =>
-          new DeliveryRule(rule.method, rule.price)
+      vendorProduct.deliverySlots.map(
+        (rule: { label: string; price: number }) =>
+          new DeliveryRule(rule.label, rule.price)
       ),
       vendorProduct.quantityPricing.map(
-        (qp: { minQty: number; price: number }) =>
-          new QuantityPricing(qp.minQty, qp.price)
+        (qp: { quantity: number; price: number }) =>
+          new QuantityPricing(qp.quantity, qp.price)
       )
     );
 
