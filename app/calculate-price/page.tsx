@@ -2,7 +2,6 @@
 import { Product, VendorProduct } from "@/lib/api";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-
 // Improved type definitions with more specific types
 type Attribute = {
   name: string;
@@ -37,6 +36,8 @@ export default function SimplifiedPriceCalculator() {
   const [vendorProduct, setVendorProduct] = useState<VendorProduct[] | null>(
     null
   );
+
+  const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethod[]>([]);
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -64,57 +65,6 @@ export default function SimplifiedPriceCalculator() {
   // Watch for product ID changes
   const productId = watch("productId");
   const selectedAttributes = watch("attributes");
-
-  const deliveryMethods: DeliveryMethod[] = [
-    {
-      label: "Standard 3-5 Working Days",
-      deliveryTimeStartDate: 0,
-      deliveryTimeEndDate: 1,
-      deliveryTimeEndTime: "23:59",
-    },
-    {
-      label: "Standard 2 Working Days",
-      deliveryTimeStartDate: 0,
-      deliveryTimeEndDate: 1,
-      deliveryTimeEndTime: "23:59",
-    },
-    {
-      label: "Priority Next Day by 11:59 PM",
-      deliveryTimeStartDate: 0,
-      deliveryTimeEndDate: 1,
-      deliveryTimeEndTime: "23:59",
-    },
-    {
-      label: "Priority Next Day by 5 PM",
-      deliveryTimeStartDate: 0,
-      deliveryTimeEndDate: 1,
-      deliveryTimeEndTime: "17:00",
-    },
-    {
-      label: "Priority Plus Next Day by 12 PM Noon",
-      deliveryTimeStartDate: 0,
-      deliveryTimeEndDate: 1,
-      deliveryTimeEndTime: "12:00",
-    },
-    {
-      label: "Priority Plus Next Day by 10:30 AM",
-      deliveryTimeStartDate: 0,
-      deliveryTimeEndDate: 1,
-      deliveryTimeEndTime: "10:30",
-    },
-    {
-      label: "Super Express Today by 11:59 PM",
-      deliveryTimeStartDate: 0,
-      deliveryTimeEndDate: 1,
-      deliveryTimeEndTime: "23:59",
-    },
-    {
-      label: "Super Express Today by 5 PM",
-      deliveryTimeStartDate: 0,
-      deliveryTimeEndDate: 1,
-      deliveryTimeEndTime: "17:00",
-    },
-  ];
 
   // Process pricing rules when vendor product changes
   useEffect(() => {
@@ -207,6 +157,18 @@ export default function SimplifiedPriceCalculator() {
 
     fetchVendorProduct();
   }, [productId]);
+
+  useEffect(() => {
+    const fetchDeliveryMethods = async () => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/delivery-methods`
+      );
+      if (!response.ok) throw new Error("Something went wrong!");
+      const data = await response.json();
+      setDeliveryMethods(data);
+    };
+    fetchDeliveryMethods();
+  }, []);
 
   // Add attribute handler
   const addAttribute = () => {
