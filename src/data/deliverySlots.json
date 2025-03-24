@@ -1,13 +1,5 @@
 [
-  {
-      "price": 143,
-      "cutoffTime": "23:56",
-      "deliveryTimeStartTime": "14:06",
-      "label": "express",
-      "deliveryTimeStartDate": 4,
-      "deliveryTimeEndDate": 21,
-      "deliveryTimeEndTime": "05:12"
-  },
+   
   {
       "price": 143,
       "cutoffTime": "23:56",
