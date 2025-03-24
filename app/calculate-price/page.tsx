@@ -10,13 +10,49 @@ export default function SimplifiedPriceCalculator() {
   );
   const [quantity, setQuantity] = useState(20);
   const [attributes, setAttributes] = useState([
-    { name: "Paper", value: "Glossy" },
+    { name: "Paper", values: ["Glossy", "Slim"] },
+  ]);
+  const [deliveryMethods] = useState([
+    { label: "Standard 3-5 Working Days", startDate: 0, endDate: 1 },
+    { label: "Standard 2 Working Days", startDate: 0, endDate: 1 },
+    { label: "Priority Next Day by 11:59 PM", startDate: 0, endDate: 1 },
+    { label: "Priority Next Day by 5 PM", startDate: 0, endDate: 1 },
+    { label: "Priority Plus Next Day by 12 PM Noon", startDate: 0, endDate: 1 },
+    { label: "Priority Plus Next Day by 10:30 AM", startDate: 0, endDate: 1 },
+    { label: "Super Express Today by 11:59 PM", startDate: 0, endDate: 1 },
+    { label: "Super Express Today by 5 PM", startDate: 0, endDate: 1 },
   ]);
   const [deliveryMethod, setDeliveryMethod] = useState("express");
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const availablePricingRules = vendorProduct?.flatMap((el) => el.pricingRules);
+  const pricingRuleOptions = availablePricingRules?.reduce(
+    (acc, curr): { attribute: string; values: string[] }[] => {
+      if (acc.some((option) => option.attribute === curr.attribute)) {
+        return [
+          ...acc.map((el) =>
+            el.attribute === curr.attribute
+              ? {
+                  attribute: curr.attribute,
+                  values: [...el.values, curr.value],
+                }
+              : el
+          ),
+        ];
+      }
+      return [...acc, { attribute: curr.attribute, values: [curr.value] }];
+    },
+    [] as { attribute: string; values: string[] }[]
+  );
 
+  const availableDeliveryMethods = vendorProduct?.flatMap(
+    (el) => el.deliverySlots
+  );
+
+  console.log(availableDeliveryMethods);
+
+  console.log(pricingRuleOptions);
   useEffect(() => {
     const fetchProducts = async () => {
       const response = await fetch(
@@ -50,7 +86,13 @@ export default function SimplifiedPriceCalculator() {
   };
 
   const addAttribute = () => {
-    setAttributes([...attributes, { name: "", value: "" }]);
+    const firstOption = pricingRuleOptions?.shift();
+    if (firstOption)
+      setAttributes([
+        ...attributes,
+        { name: firstOption.attribute, values: firstOption.values },
+      ]);
+    else console.log(firstOption);
   };
 
   const deleteAttribute = (index) => {
@@ -94,33 +136,6 @@ export default function SimplifiedPriceCalculator() {
     }
   };
 
-  const availablePricingRules = vendorProduct?.flatMap((el) => el.pricingRules);
-  const pricingRuleOptions = availablePricingRules?.reduce(
-    (acc, curr): { attribute: string; values: string[] }[] => {
-      if (acc.some((option) => option.attribute === curr.attribute)) {
-        return [
-          ...acc.map((el) =>
-            el.attribute === curr.attribute
-              ? {
-                  attribute: curr.attribute,
-                  values: [...el.values, curr.value],
-                }
-              : el
-          ),
-        ];
-      }
-      return [...acc, { attribute: curr.attribute, values: [curr.value] }];
-    },
-    [] as { attribute: string; values: string[] }[]
-  );
-
-  const availableDeliveryMethods = vendorProduct?.flatMap(
-    (el) => el.deliverySlots
-  );
-
-  console.log(availableDeliveryMethods);
-
-  console.log(pricingRuleOptions);
   return (
     <div className="p-4 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Simplified Price Calculator</h1>
@@ -185,23 +200,24 @@ export default function SimplifiedPriceCalculator() {
             <div key={index} className="flex gap-2 mb-2">
               <input
                 type="text"
-                className="flex-1 border p-2 rounded"
+                className=" flex-1 border p-2 rounded"
                 placeholder="Attribute name"
                 value={attr.name}
+                readOnly
                 onChange={(e) =>
                   handleAttributeChange(index, "name", e.target.value)
                 }
               />
-
-              <input
-                type="text"
-                className="flex-1 border p-2 rounded"
-                placeholder="Attribute value"
-                value={attr.value}
-                onChange={(e) =>
-                  handleAttributeChange(index, "value", e.target.value)
-                }
-              />
+              <select id="productId" className="flex-1  border p-2 rounded">
+                <option value="" disabled>
+                  Select an attribute
+                </option>
+                {attr.values.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
 
               <button
                 type="button"
@@ -220,14 +236,21 @@ export default function SimplifiedPriceCalculator() {
           <label htmlFor="delivery" className="block text-sm font-medium mb-1">
             Delivery Method
           </label>
-          <input
-            id="delivery"
-            type="text"
-            placeholder="Enter delivery method"
+          <select
+            id="productId"
+            className="w-full border p-2 rounded"
             value={deliveryMethod}
             onChange={(e) => setDeliveryMethod(e.target.value)}
-            className="w-full border p-2 rounded"
-          />
+          >
+            <option value="" disabled>
+              Select a product
+            </option>
+            {deliveryMethods.map((method) => (
+              <option key={method.label} value={method.label}>
+                {method.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Calculate Button */}
