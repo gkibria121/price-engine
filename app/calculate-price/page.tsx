@@ -29,6 +29,7 @@ type DeliveryMethod = {
   label: string;
   startDate: number;
   endDate: number;
+  endTime: `${number}:${number}`;
 };
 
 export default function SimplifiedPriceCalculator() {
@@ -65,14 +66,54 @@ export default function SimplifiedPriceCalculator() {
   const selectedAttributes = watch("attributes");
 
   const deliveryMethods: DeliveryMethod[] = [
-    { label: "Standard 3-5 Working Days", startDate: 0, endDate: 1 },
-    { label: "Standard 2 Working Days", startDate: 0, endDate: 1 },
-    { label: "Priority Next Day by 11:59 PM", startDate: 0, endDate: 1 },
-    { label: "Priority Next Day by 5 PM", startDate: 0, endDate: 1 },
-    { label: "Priority Plus Next Day by 12 PM Noon", startDate: 0, endDate: 1 },
-    { label: "Priority Plus Next Day by 10:30 AM", startDate: 0, endDate: 1 },
-    { label: "Super Express Today by 11:59 PM", startDate: 0, endDate: 1 },
-    { label: "Super Express Today by 5 PM", startDate: 0, endDate: 1 },
+    {
+      label: "Standard 3-5 Working Days",
+      startDate: 0,
+      endDate: 1,
+      endTime: "23:59",
+    },
+    {
+      label: "Standard 2 Working Days",
+      startDate: 0,
+      endDate: 1,
+      endTime: "23:59",
+    },
+    {
+      label: "Priority Next Day by 11:59 PM",
+      startDate: 0,
+      endDate: 1,
+      endTime: "23:59",
+    },
+    {
+      label: "Priority Next Day by 5 PM",
+      startDate: 0,
+      endDate: 1,
+      endTime: "17:00",
+    },
+    {
+      label: "Priority Plus Next Day by 12 PM Noon",
+      startDate: 0,
+      endDate: 1,
+      endTime: "12:00",
+    },
+    {
+      label: "Priority Plus Next Day by 10:30 AM",
+      startDate: 0,
+      endDate: 1,
+      endTime: "10:30",
+    },
+    {
+      label: "Super Express Today by 11:59 PM",
+      startDate: 0,
+      endDate: 1,
+      endTime: "23:59",
+    },
+    {
+      label: "Super Express Today by 5 PM",
+      startDate: 0,
+      endDate: 1,
+      endTime: "17:00",
+    },
   ];
 
   // Process pricing rules when vendor product changes
@@ -221,12 +262,12 @@ export default function SimplifiedPriceCalculator() {
         name: attr.name,
         value: attr.selectedValue,
       }));
-
+      const selectedDeliveryMethod = JSON.parse(data.deliveryMethod);
       const payload = {
         productId: data.productId,
         quantity: data.quantity,
         attributes: formattedAttributes,
-        deliveryMethod: data.deliveryMethod,
+        deliveryMethod: selectedDeliveryMethod,
         currentTime,
       };
 
@@ -478,7 +519,7 @@ export default function SimplifiedPriceCalculator() {
                   Select a delivery method
                 </option>
                 {deliveryMethods.map((method) => (
-                  <option key={method.label} value={method.label}>
+                  <option key={method.label} value={JSON.stringify(method)}>
                     {method.label}
                   </option>
                 ))}

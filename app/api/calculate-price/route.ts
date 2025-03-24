@@ -3,7 +3,7 @@ import PriceCalculationRequest from "@/lib/PriceCalculationRequest";
 import PricingEngine from "@/lib/PricingEngine";
 import ProductModel from "@/models/Product";
 import VendorProduct from "@/models/VendorProduct";
-import { getVendor } from "@/services/VendorService";
+import { getMatchedDeliverySlot, getVendor } from "@/services/VendorService";
 import Attribute from "@/utils/Attribute";
 import DeliveryRule from "@/utils/DeliveryRule";
 import PricingRule from "@/utils/PricingRule";
@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     await connectDB();
     const { productId, quantity, attributes, deliveryMethod, currentTime } =
       await req.json();
-    console.log(productId, quantity, attributes, deliveryMethod, currentTime);
     if (!productId || !quantity) {
       return NextResponse.json(
         { message: "Missing required fields" },
@@ -39,7 +38,11 @@ export async function POST(req: NextRequest) {
     }
 
     const vendorId = vendor._id;
-    console.log(vendorId);
+    const matchedDeliverySlot = await getMatchedDeliverySlot(
+      vendor,
+      productId,
+      deliveryMethod
+    );
     const vendorProduct = await VendorProduct.findOne({
       product: productId,
       vendor: vendorId,
@@ -87,7 +90,7 @@ export async function POST(req: NextRequest) {
         (attr: { name: string; value: string }) =>
           new Attribute(attr.name, attr.value)
       ),
-      deliveryMethod
+      matchedDeliverySlot.label
     );
 
     const priceData = pricingEngine.calculatePrice(priceRequest);

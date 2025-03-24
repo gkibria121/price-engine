@@ -1,5 +1,13 @@
-import { Schema, model, models } from "mongoose";
-
+import { Schema, model, models, Document, Model } from "mongoose";
+export interface IDeliverySlot extends Document {
+  label: string;
+  price: number;
+  deliveryTimeStartDate: number;
+  deliveryTimeStartTime: string;
+  deliveryTimeEndDate: number;
+  deliveryTimeEndTime: string;
+  cutoffTime: string;
+}
 const DeliverySlotSchema = new Schema({
   label: {
     type: String,
@@ -52,4 +60,5 @@ const DeliverySlotSchema = new Schema({
   },
 });
 
-export default models.DeliverySlot || model("DeliverySlot", DeliverySlotSchema);
+export default (models.DeliverySlot as Model<IDeliverySlot>) ||
+  model<IDeliverySlot>("DeliverySlot", DeliverySlotSchema);
