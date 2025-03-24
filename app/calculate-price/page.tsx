@@ -2,6 +2,13 @@
 import { Product, VendorProduct } from "@/lib/api";
 import { useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+
+// Improved type definitions with more specific types
+type Attribute = {
+  name: string;
+  value: string;
+};
+
 type FormValues = {
   productId: string;
   quantity: number;
@@ -12,14 +19,29 @@ type FormValues = {
   }>;
   deliveryMethod: string;
 };
+
+type CalculationResult = {
+  totalPrice: number;
+  breakdown: Record<string, any>;
+};
+
+type DeliveryMethod = {
+  label: string;
+  startDate: number;
+  endDate: number;
+};
+
 export default function SimplifiedPriceCalculator() {
   const [products, setProducts] = useState<Product[]>([]);
   const [vendorProduct, setVendorProduct] = useState<VendorProduct[] | null>(
     null
   );
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [availableAttributes, setAvailableAttributes] = useState<
+    Array<{ attribute: string; values: string[] }>
+  >([]);
 
   // Form setup with react-hook-form
   const {
@@ -27,6 +49,7 @@ export default function SimplifiedPriceCalculator() {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
@@ -39,8 +62,9 @@ export default function SimplifiedPriceCalculator() {
 
   // Watch for product ID changes
   const productId = watch("productId");
+  const selectedAttributes = watch("attributes");
 
-  const [deliveryMethods] = useState([
+  const deliveryMethods: DeliveryMethod[] = [
     { label: "Standard 3-5 Working Days", startDate: 0, endDate: 1 },
     { label: "Standard 2 Working Days", startDate: 0, endDate: 1 },
     { label: "Priority Next Day by 11:59 PM", startDate: 0, endDate: 1 },
@@ -49,85 +73,115 @@ export default function SimplifiedPriceCalculator() {
     { label: "Priority Plus Next Day by 10:30 AM", startDate: 0, endDate: 1 },
     { label: "Super Express Today by 11:59 PM", startDate: 0, endDate: 1 },
     { label: "Super Express Today by 5 PM", startDate: 0, endDate: 1 },
-  ]);
+  ];
 
-  const availablePricingRules = useMemo(
-    () => vendorProduct?.flatMap((el) => el.pricingRules),
-    [vendorProduct]
-  );
-  const pricingRuleOptions = useMemo(
-    () =>
-      availablePricingRules?.reduce(
-        (acc, curr): { attribute: string; values: string[] }[] => {
-          if (acc.some((option) => option.attribute === curr.attribute)) {
-            return [
-              ...acc.map((el) =>
-                el.attribute === curr.attribute
-                  ? {
-                      attribute: curr.attribute,
-                      values: [...el.values, curr.value],
-                    }
-                  : el
-              ),
-            ];
-          }
-          return [...acc, { attribute: curr.attribute, values: [curr.value] }];
-        },
-        [] as { attribute: string; values: string[] }[]
-      ),
-    [availablePricingRules]
-  );
+  // Process pricing rules when vendor product changes
+  useEffect(() => {
+    if (!vendorProduct) {
+      setAvailableAttributes([]);
+      return;
+    }
+
+    const availablePricingRules = vendorProduct.flatMap(
+      (el) => el.pricingRules || []
+    );
+
+    // Group attributes and their values
+    const attributeMap = availablePricingRules.reduce((acc, rule) => {
+      if (!rule.attribute) return acc;
+
+      if (!acc[rule.attribute]) {
+        acc[rule.attribute] = new Set();
+      }
+      if (rule.value) {
+        acc[rule.attribute].add(rule.value);
+      }
+      return acc;
+    }, {} as Record<string, Set<string>>);
+
+    // Convert to array format needed for the form
+    const attributes = Object.entries(attributeMap).map(
+      ([attribute, valueSet]) => ({
+        attribute,
+        values: Array.from(valueSet),
+      })
+    );
+
+    setAvailableAttributes(attributes);
+
+    // Reset attributes when product changes
+    setValue("attributes", []);
+  }, [vendorProduct, setValue]);
 
   // Fetch products on component mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setIsLoading(true);
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/products`
         );
 
-        if (!response.ok) throw new Error("Something went wrong!");
+        if (!response.ok) throw new Error("Failed to load products");
         const data = await response.json();
         setProducts(data);
       } catch (error) {
         console.error("Error fetching products:", error);
-        setError("Failed to load products");
+        setError("Failed to load products. Please try again later.");
+      } finally {
+        setIsLoading(false);
       }
     };
+
     fetchProducts();
   }, []);
 
   // Fetch vendor product when productId changes
   useEffect(() => {
     const fetchVendorProduct = async () => {
+      if (!productId) return;
+
       try {
+        setIsLoading(true);
+        setError("");
+
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/products/${productId}/vendor-products`
         );
 
-        if (!response.ok) throw new Error("Something went wrong!");
+        if (!response.ok) throw new Error("Failed to load product details");
         const data = await response.json();
         setVendorProduct(data);
+
+        // Reset result when product changes
+        setResult(null);
       } catch (error) {
         console.error("Error fetching vendor product:", error);
         setError("Failed to load vendor product details");
+        setVendorProduct(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    if (productId) fetchVendorProduct();
+    fetchVendorProduct();
   }, [productId]);
 
   // Add attribute handler
   const addAttribute = () => {
-    const firstOption = pricingRuleOptions?.shift();
+    const usedAttributes = new Set(selectedAttributes.map((attr) => attr.name));
 
-    if (firstOption) {
-      const currentAttributes = watch("attributes");
+    // Find first available attribute not already added
+    const availableAttribute = availableAttributes.find(
+      (attr) => !usedAttributes.has(attr.attribute)
+    );
+
+    if (availableAttribute) {
       setValue("attributes", [
-        ...currentAttributes,
+        ...selectedAttributes,
         {
-          name: firstOption.attribute,
-          values: firstOption.values,
+          name: availableAttribute.attribute,
+          values: availableAttribute.values,
           selectedValue: "",
         },
       ]);
@@ -135,16 +189,27 @@ export default function SimplifiedPriceCalculator() {
   };
 
   // Delete attribute handler
-  const deleteAttribute = (index) => {
-    const currentAttributes = watch("attributes");
+  const deleteAttribute = (index: number) => {
     setValue(
       "attributes",
-      currentAttributes.filter((_, i) => i !== index)
+      selectedAttributes.filter((_, i) => i !== index)
     );
   };
 
+  // Reset form handler
+  const handleReset = () => {
+    reset({
+      productId: "",
+      quantity: 20,
+      attributes: [],
+      deliveryMethod: "",
+    });
+    setResult(null);
+    setError("");
+  };
+
   // Form submission handler
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: FormValues) => {
     try {
       setIsLoading(true);
       setError("");
@@ -152,10 +217,11 @@ export default function SimplifiedPriceCalculator() {
       const currentTime = new Date().toISOString();
 
       // Format attributes for API
-      const formattedAttributes = data.attributes.map((attr) => ({
+      const formattedAttributes: Attribute[] = data.attributes.map((attr) => ({
         name: attr.name,
         value: attr.selectedValue,
       }));
+
       const payload = {
         productId: data.productId,
         quantity: data.quantity,
@@ -163,6 +229,8 @@ export default function SimplifiedPriceCalculator() {
         deliveryMethod: data.deliveryMethod,
         currentTime,
       };
+
+      // Remove this console.log and return in production
       console.log(payload);
       return;
       const response = await fetch("/api/calculate-price", {
@@ -172,45 +240,68 @@ export default function SimplifiedPriceCalculator() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to calculate price");
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || "Failed to calculate price");
       }
 
       const resultData = await response.json();
       setResult(resultData);
     } catch (err: any) {
-      setError("Error calculating price: " + err.message);
+      setError(
+        `Error calculating price: ${err.message || "Unknown error occurred"}`
+      );
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Calculate if Add Attribute button should be disabled
+  const canAddMoreAttributes = useMemo(() => {
+    const usedAttributes = new Set(selectedAttributes.map((attr) => attr.name));
+    return availableAttributes.some(
+      (attr) => !usedAttributes.has(attr.attribute)
+    );
+  }, [availableAttributes, selectedAttributes]);
+
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Simplified Price Calculator</h1>
+    <div className="p-5 max-w-2xl mx-auto bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-6 text-gray-800">
+        Simplified Price Calculator
+      </h1>
 
       {error && (
-        <div className="bg-red-100 text-red-700 p-3 mb-4 rounded">{error}</div>
+        <div className="bg-red-100 text-red-700 p-3 mb-4 rounded border border-red-300">
+          {error}
+        </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {/* Product ID */}
-        <div>
-          <label htmlFor="productId" className="block text-sm font-medium mb-1">
-            Product ID
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* Product Selection */}
+        <div className="space-y-1">
+          <label
+            htmlFor="productId"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Product
           </label>
           <Controller
             name="productId"
             control={control}
-            rules={{ required: "Product is required" }}
+            rules={{ required: "Please select a product" }}
             render={({ field }) => (
               <select
                 id="productId"
-                className="w-full border p-2 rounded"
+                className={`w-full border ${
+                  errors.productId ? "border-red-500" : "border-gray-300"
+                } p-2 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
+                disabled={isLoading || products.length === 0}
                 {...field}
               >
                 <option value="" disabled>
-                  Select a product
+                  {products.length === 0
+                    ? "Loading products..."
+                    : "Select a product"}
                 </option>
                 {products.map((product) => (
                   <option key={product._id} value={product._id}>
@@ -228,8 +319,11 @@ export default function SimplifiedPriceCalculator() {
         </div>
 
         {/* Quantity */}
-        <div>
-          <label htmlFor="quantity" className="block text-sm font-medium mb-1">
+        <div className="space-y-1">
+          <label
+            htmlFor="quantity"
+            className="block text-sm font-medium text-gray-700"
+          >
             Quantity
           </label>
           <Controller
@@ -238,17 +332,26 @@ export default function SimplifiedPriceCalculator() {
             rules={{
               required: "Quantity is required",
               min: { value: 1, message: "Quantity must be at least 1" },
+              pattern: {
+                value: /^[0-9]+$/,
+                message: "Please enter a valid number",
+              },
             }}
             render={({ field }) => (
               <input
                 id="quantity"
                 type="number"
                 min="1"
-                placeholder="Quantity"
-                className="w-full border p-2 rounded"
+                placeholder="Enter quantity"
+                className={`w-full border ${
+                  errors.quantity ? "border-red-500" : "border-gray-300"
+                } p-2 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
+                disabled={isLoading || !productId}
                 {...field}
                 onChange={(e) =>
-                  field.onChange(parseInt(e.target.value, 10) || "")
+                  field.onChange(
+                    e.target.value ? parseInt(e.target.value, 10) : ""
+                  )
                 }
               />
             )}
@@ -260,73 +363,115 @@ export default function SimplifiedPriceCalculator() {
           )}
         </div>
 
-        {/* Attributes */}
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-medium">Attributes</label>
+        {/* Attributes Section */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="block text-sm font-medium text-gray-700">
+              Attributes
+            </label>
             <button
               type="button"
               onClick={addAttribute}
-              className="bg-blue-500 text-white p-1 px-2 rounded text-sm"
+              disabled={!canAddMoreAttributes || isLoading || !productId}
+              className="bg-blue-500 hover:bg-blue-600 text-white p-1 px-3 rounded text-sm disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               Add Attribute
             </button>
           </div>
 
-          {watch("attributes").map((attr, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <input
-                type="text"
-                className="flex-1 border p-2 rounded"
-                placeholder="Attribute name"
-                value={attr.name}
-                readOnly
-              />
-              <Controller
-                name={`attributes.${index}.selectedValue`}
-                control={control}
-                rules={{ required: "Please select a value" }}
-                render={({ field }) => (
-                  <select className="flex-1 border p-2 rounded" {...field}>
-                    <option value="" disabled>
-                      Select an attribute
-                    </option>
-                    {attr.values.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              />
-              <button
-                type="button"
-                onClick={() => deleteAttribute(index)}
-                className="bg-red-500 text-white p-2 rounded"
-                aria-label="Delete attribute"
-              >
-                &times;
-              </button>
-            </div>
-          ))}
+          {selectedAttributes.length === 0 && productId && (
+            <p className="text-sm text-gray-500 italic">
+              {availableAttributes.length > 0
+                ? "Click 'Add Attribute' to select product attributes"
+                : "No attributes available for this product"}
+            </p>
+          )}
+
+          <div className="space-y-3">
+            {selectedAttributes.map((attr, index) => (
+              <div key={index} className="flex gap-2 items-center">
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    {attr.name}
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 p-2 rounded bg-gray-50"
+                    value={attr.name}
+                    disabled
+                    readOnly
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-medium text-gray-500 mb-1">
+                    Value
+                  </label>
+                  <Controller
+                    name={`attributes.${index}.selectedValue`}
+                    control={control}
+                    rules={{ required: "Please select a value" }}
+                    render={({ field }) => (
+                      <select
+                        className={`w-full border ${
+                          errors.attributes?.[index]?.selectedValue
+                            ? "border-red-500"
+                            : "border-gray-300"
+                        } p-2 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
+                        disabled={isLoading}
+                        {...field}
+                      >
+                        <option value="" disabled>
+                          Select a value
+                        </option>
+                        {attr.values.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                  {errors.attributes?.[index]?.selectedValue && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.attributes[index].selectedValue?.message}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-5">
+                  <button
+                    type="button"
+                    onClick={() => deleteAttribute(index)}
+                    className="bg-red-500 hover:bg-red-600 text-white p-2 rounded transition-colors"
+                    disabled={isLoading}
+                    aria-label="Delete attribute"
+                  >
+                    &times;
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Delivery Method */}
-        <div>
+        <div className="space-y-1">
           <label
             htmlFor="deliveryMethod"
-            className="block text-sm font-medium mb-1"
+            className="block text-sm font-medium text-gray-700"
           >
             Delivery Method
           </label>
           <Controller
             name="deliveryMethod"
             control={control}
-            rules={{ required: "Delivery method is required" }}
+            rules={{ required: "Please select a delivery method" }}
             render={({ field }) => (
               <select
                 id="deliveryMethod"
-                className="w-full border p-2 rounded"
+                className={`w-full border ${
+                  errors.deliveryMethod ? "border-red-500" : "border-gray-300"
+                } p-2 rounded shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
+                disabled={isLoading || !productId}
                 {...field}
               >
                 <option value="" disabled>
@@ -347,26 +492,41 @@ export default function SimplifiedPriceCalculator() {
           )}
         </div>
 
-        {/* Calculate Button */}
-        <button
-          type="submit"
-          className="w-full bg-green-500 text-white p-2 rounded mt-4 disabled:bg-gray-300"
-          disabled={isLoading}
-        >
-          {isLoading ? "Calculating..." : "Calculate Price"}
-        </button>
+        {/* Form Buttons */}
+        <div className="flex gap-3 pt-2">
+          <button
+            type="submit"
+            className="flex-1 bg-green-500 hover:bg-green-600 text-white p-3 rounded font-medium transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+            disabled={isLoading || !productId}
+          >
+            {isLoading ? "Calculating..." : "Calculate Price"}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleReset}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 p-3 rounded font-medium transition-colors disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+            disabled={isLoading}
+          >
+            Reset
+          </button>
+        </div>
       </form>
 
       {/* Results */}
       {result && (
-        <div className="mt-6 p-4 border rounded bg-gray-50">
-          <h2 className="text-xl font-semibold mb-2">Calculation Result</h2>
-          <div className="text-lg font-bold mb-2">
-            Total: £ {result?.totalPrice?.toFixed(2) ?? null}
+        <div className="mt-8 p-4 border rounded-lg bg-gray-50 shadow-inner">
+          <h2 className="text-xl font-semibold mb-3 text-gray-800">
+            Price Calculation Result
+          </h2>
+          <div className="text-2xl font-bold mb-4 text-green-700">
+            Total: £{result.totalPrice.toFixed(2)}
           </div>
           <div>
-            <h3 className="text-md font-medium mb-1">Price Breakdown:</h3>
-            <pre className="bg-white p-2 rounded overflow-x-auto">
+            <h3 className="text-md font-medium mb-2 text-gray-700">
+              Price Breakdown:
+            </h3>
+            <pre className="bg-white p-3 rounded border border-gray-200 overflow-x-auto text-sm">
               {JSON.stringify(result.breakdown, null, 2)}
             </pre>
           </div>
