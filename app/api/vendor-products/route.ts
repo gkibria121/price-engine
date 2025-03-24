@@ -22,17 +22,20 @@ export async function POST(req: NextRequest) {
       quantityPricing,
     } = await req.json();
 
-    console.log(
-      vendorId,
-      productId,
-      pricingRules,
-      deliverySlots,
-      quantityPricing
-    );
     if (!vendorId) {
       return NextResponse.json(
         { message: "Vendor ID is required" },
         { status: 400 }
+      );
+    }
+    const existingVendorProduct = await VendorProductModel.findOne({
+      product: productId,
+      vendor: vendorId,
+    });
+    if (existingVendorProduct) {
+      return NextResponse.json(
+        { message: "Vendor Product already exists" },
+        { status: 422 }
       );
     }
 

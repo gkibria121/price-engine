@@ -1,50 +1,83 @@
 [
-    {
+  {
+      "price": 143,
+      "cutoffTime": "23:56",
+      "deliveryTimeStartTime": "14:06",
+      "label": "express",
+      "deliveryTimeStartDate": 4,
+      "deliveryTimeEndDate": 21,
+      "deliveryTimeEndTime": "05:12"
+  },
+  {
+      "price": 143,
+      "cutoffTime": "23:56",
+      "deliveryTimeStartTime": "14:06",
       "label": "Standard 3-5 Working Days",
       "deliveryTimeStartDate": 0,
       "deliveryTimeEndDate": 1,
       "deliveryTimeEndTime": "23:59"
-    },
-    {
+  },
+  {
+      "price": 143,
+      "cutoffTime": "23:56",
+      "deliveryTimeStartTime": "14:06",
       "label": "Standard 2 Working Days",
       "deliveryTimeStartDate": 0,
       "deliveryTimeEndDate": 1,
       "deliveryTimeEndTime": "23:59"
-    },
-    {
+  },
+  {
+      "price": 143,
+      "cutoffTime": "23:56",
+      "deliveryTimeStartTime": "14:06",
       "label": "Priority Next Day by 11:59 PM",
       "deliveryTimeStartDate": 0,
       "deliveryTimeEndDate": 1,
       "deliveryTimeEndTime": "23:59"
-    },
-    {
+  },
+  {
+      "price": 143,
+      "cutoffTime": "23:56",
+      "deliveryTimeStartTime": "14:06",
       "label": "Priority Next Day by 5 PM",
       "deliveryTimeStartDate": 0,
       "deliveryTimeEndDate": 1,
       "deliveryTimeEndTime": "17:00"
-    },
-    {
+  },
+  {
+      "price": 143,
+      "cutoffTime": "23:56",
+      "deliveryTimeStartTime": "14:06",
       "label": "Priority Plus Next Day by 12 PM Noon",
       "deliveryTimeStartDate": 0,
       "deliveryTimeEndDate": 1,
       "deliveryTimeEndTime": "12:00"
-    },
-    {
+  },
+  {
+      "price": 143,
+      "cutoffTime": "23:56",
+      "deliveryTimeStartTime": "14:06",
       "label": "Priority Plus Next Day by 10:30 AM",
       "deliveryTimeStartDate": 0,
       "deliveryTimeEndDate": 1,
       "deliveryTimeEndTime": "10:30"
-    },
-    {
+  },
+  {
+      "price": 143,
+      "cutoffTime": "23:56",
+      "deliveryTimeStartTime": "14:06",
       "label": "Super Express Today by 11:59 PM",
       "deliveryTimeStartDate": 0,
       "deliveryTimeEndDate": 1,
       "deliveryTimeEndTime": "23:59"
-    },
-    {
+  },
+  {
+      "price": 143,
+      "cutoffTime": "23:56",
+      "deliveryTimeStartTime": "14:06",
       "label": "Super Express Today by 5 PM",
       "deliveryTimeStartDate": 0,
       "deliveryTimeEndDate": 1,
       "deliveryTimeEndTime": "17:00"
-    } 
-  ]
+  }
+]

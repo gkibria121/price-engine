@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import VendorProductForm from "@/components/VendorProductForm";
 import { Vendor, getVendors } from "@/lib/api";
 import Product from "@/utils/Product";
+import { DeliveryMethod } from "@/types/deliverySlots";
 
 export default function AddProductPage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -12,7 +13,7 @@ export default function AddProductPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const router = useRouter();
-
+  const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethod[]>([]);
   useEffect(() => {
     const fetchVendors = async () => {
       try {
@@ -47,6 +48,24 @@ export default function AddProductPage() {
 
     fetchProducts();
   }, []);
+  useEffect(() => {
+    setLoading(true);
+    const fetchDeliveryMethods = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/delivery-methods`
+        );
+        if (!response.ok) throw new Error("Something went wrong!");
+        const data = await response.json();
+        setDeliveryMethods(data);
+        setLoading(false);
+      } catch (error: any) {
+        console.log(error.message);
+        setLoading(false);
+      }
+    };
+    fetchDeliveryMethods();
+  }, []);
   const handleSuccess = () => {
     router.push("/products");
   };
@@ -77,6 +96,7 @@ export default function AddProductPage() {
       <VendorProductForm
         vendors={vendors}
         products={products}
+        deliveryMethods={deliveryMethods}
         onSuccess={handleSuccess}
       />
     </div>

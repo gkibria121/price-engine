@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import {
   Product,
@@ -9,10 +9,12 @@ import {
   createVendorProduct,
   updateVendorProduct,
 } from "@/lib/api";
+import { DeliveryMethod } from "@/types/deliverySlots";
 
 interface ProductFormProps {
   products?: Product[];
   vendorProduct?: VendorProduct;
+  deliveryMethods?: DeliveryMethod[];
   vendors?: Vendor[];
   onSuccess?: () => void;
   isEdit?: boolean;
@@ -22,25 +24,29 @@ export default function VendorProductForm({
   products,
   vendorProduct,
   vendors,
+  deliveryMethods,
   onSuccess,
   isEdit = false,
 }: ProductFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-
   const defaultValues: any = vendorProduct || {
     pricingRules: [{ attribute: "", value: "", price: 0 }],
-    deliverySlots: [{ method: "Standard", price: 0 }],
+    deliverySlots: deliveryMethods,
     quantityPricing: [{ minQty: 1, price: 0 }],
   };
 
   const {
     register,
     control,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm({ defaultValues });
 
+  useEffect(() => {
+    if (!isEdit) setValue("deliverySlots", deliveryMethods);
+  }, [deliveryMethods, setValue, isEdit]);
   const {
     fields: pricingFields,
     append: appendPricing,
@@ -52,7 +58,6 @@ export default function VendorProductForm({
     append: appendDelivery,
     remove: removeDelivery,
   } = useFieldArray({ control, name: "deliverySlots" });
-
   const {
     fields: quantityFields,
     append: appendQuantity,
@@ -73,9 +78,11 @@ export default function VendorProductForm({
       }
 
       if (onSuccess) onSuccess();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Failed to save vendor product");
+      setError(
+        "Failed to save vendor product. " + err?.response?.data?.message
+      );
     } finally {
       setSubmitting(false);
     }
