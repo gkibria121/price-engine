@@ -27,9 +27,9 @@ type CalculationResult = {
 
 type DeliveryMethod = {
   label: string;
-  startDate: number;
-  endDate: number;
-  endTime: `${number}:${number}`;
+  deliveryTimeStartDate: number;
+  deliveryTimeEndDate: number;
+  deliveryTimeEndTime: `${number}:${number}`;
 };
 
 export default function SimplifiedPriceCalculator() {
@@ -68,51 +68,51 @@ export default function SimplifiedPriceCalculator() {
   const deliveryMethods: DeliveryMethod[] = [
     {
       label: "Standard 3-5 Working Days",
-      startDate: 0,
-      endDate: 1,
-      endTime: "23:59",
+      deliveryTimeStartDate: 0,
+      deliveryTimeEndDate: 1,
+      deliveryTimeEndTime: "23:59",
     },
     {
       label: "Standard 2 Working Days",
-      startDate: 0,
-      endDate: 1,
-      endTime: "23:59",
+      deliveryTimeStartDate: 0,
+      deliveryTimeEndDate: 1,
+      deliveryTimeEndTime: "23:59",
     },
     {
       label: "Priority Next Day by 11:59 PM",
-      startDate: 0,
-      endDate: 1,
-      endTime: "23:59",
+      deliveryTimeStartDate: 0,
+      deliveryTimeEndDate: 1,
+      deliveryTimeEndTime: "23:59",
     },
     {
       label: "Priority Next Day by 5 PM",
-      startDate: 0,
-      endDate: 1,
-      endTime: "17:00",
+      deliveryTimeStartDate: 0,
+      deliveryTimeEndDate: 1,
+      deliveryTimeEndTime: "17:00",
     },
     {
       label: "Priority Plus Next Day by 12 PM Noon",
-      startDate: 0,
-      endDate: 1,
-      endTime: "12:00",
+      deliveryTimeStartDate: 0,
+      deliveryTimeEndDate: 1,
+      deliveryTimeEndTime: "12:00",
     },
     {
       label: "Priority Plus Next Day by 10:30 AM",
-      startDate: 0,
-      endDate: 1,
-      endTime: "10:30",
+      deliveryTimeStartDate: 0,
+      deliveryTimeEndDate: 1,
+      deliveryTimeEndTime: "10:30",
     },
     {
       label: "Super Express Today by 11:59 PM",
-      startDate: 0,
-      endDate: 1,
-      endTime: "23:59",
+      deliveryTimeStartDate: 0,
+      deliveryTimeEndDate: 1,
+      deliveryTimeEndTime: "23:59",
     },
     {
       label: "Super Express Today by 5 PM",
-      startDate: 0,
-      endDate: 1,
-      endTime: "17:00",
+      deliveryTimeStartDate: 0,
+      deliveryTimeEndDate: 1,
+      deliveryTimeEndTime: "17:00",
     },
   ];
 
@@ -273,7 +273,7 @@ export default function SimplifiedPriceCalculator() {
 
       // Remove this console.log and return in production
       console.log(payload);
-      return;
+      // return;
       const response = await fetch("/api/calculate-price", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -561,7 +561,7 @@ export default function SimplifiedPriceCalculator() {
             Price Calculation Result
           </h2>
           <div className="text-2xl font-bold mb-4 text-green-700">
-            Total: £{result.totalPrice.toFixed(2)}
+            Total: £{result?.totalPrice?.toFixed(2)}
           </div>
           <div>
             <h3 className="text-md font-medium mb-2 text-gray-700">
