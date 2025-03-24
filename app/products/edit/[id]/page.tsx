@@ -68,7 +68,7 @@ export default function AddProductPage() {
       )}
       {formType === "json" && (
         <>
-          <ProductFormJson onSuccess={handleSuccess} product={product} />
+          <ProductFormJson onSuccess={handleSuccess} vendorProduct={product} />
         </>
       )}
     </div>

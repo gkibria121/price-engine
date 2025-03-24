@@ -1,4 +1,4 @@
-import { updateProduct, VendorProduct } from "@/lib/api";
+import { Product, updateProduct, VendorProduct } from "@/lib/api";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -6,7 +6,7 @@ function ProductFormJson({
   vendorProduct,
   onSuccess,
 }: {
-  vendorProduct: VendorProduct;
+  vendorProduct: VendorProduct | Product;
   onSuccess: () => void;
 }) {
   const [submitting, setSubmitting] = useState(false);
