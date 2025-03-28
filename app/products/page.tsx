@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Product, VendorProduct } from "@/lib/api";
 import DeleteProduct from "@/components/DeleteProduct";
+import InputCSV from "@/components/InputCSV";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -64,10 +65,11 @@ export default function ProductsPage() {
         <h1 className="text-3xl font-bold">Products</h1>
         <Link
           href="/products/add"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 ml-auto mr-1"
         >
           Add New Product
         </Link>
+        <InputCSV name="products_csv" />
       </div>
 
       {products.length === 0 ? (
@@ -104,16 +106,20 @@ export default function ProductsPage() {
         <h1 className="text-3xl font-bold">Vendor Products</h1>
         <Link
           href="/vendor-products/add"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 ml-auto mr-1"
         >
           Add New Vendor Product
         </Link>
+        <InputCSV name="products_csv" />
       </div>
 
       {products.length === 0 ? (
         <div className="text-center p-8 bg-gray-50 rounded-lg">
           <p className="mb-4">No vendor products found.</p>
-          <Link href="/products/add" className="text-blue-600 hover:underline">
+          <Link
+            href="/products/add"
+            className="text-blue-600 hover:underline  "
+          >
             Add your first vendor product
           </Link>
         </div>

@@ -16,6 +16,7 @@ export default function Page() {
   return (
     <main>
       <h1>Create a Vendor</h1>
+
       <VendorForm onSuccess={handleSuccess} onCancel={handleCancel} />
     </main>
   );

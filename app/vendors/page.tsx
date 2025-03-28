@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Vendor } from "@/lib/api";
 import axios from "axios";
+import InputCSV from "@/components/InputCSV";
 
 export default function VendorList() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -43,12 +44,14 @@ export default function VendorList() {
     <main className="p-6 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Vendors</h1>
+
         <Link
           href="/vendors/add"
-          className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+          className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded ml-auto mr-1"
         >
           Create Vendor
         </Link>
+        <InputCSV name="vendors_csv" />
       </div>
 
       {isLoading && (
@@ -92,7 +95,9 @@ export default function VendorList() {
               {vendors.map((vendor) => (
                 <tr key={vendor._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="font-medium text-gray-900">{vendor.name}</div>
+                    <div className="font-medium text-gray-900">
+                      {vendor.name}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-gray-500">{vendor.email}</div>
