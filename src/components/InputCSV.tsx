@@ -1,4 +1,5 @@
 "use client";
+import csvToJson from "@/lib/csv-to-json";
 import React, { useRef, useState } from "react";
 
 function InputCSV({ name }: { name: string }) {
@@ -27,7 +28,8 @@ function InputCSV({ name }: { name: string }) {
 
   const onFileUpload = (fileContent: string) => {
     console.log("File processing complete:", fileContent);
-    // Call any additional processing functions here
+    const jsonData = csvToJson(fileContent, { headers: true });
+    console.log(jsonData);
   };
 
   return (
