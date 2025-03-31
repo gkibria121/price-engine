@@ -32,6 +32,13 @@ export default function VendorList() {
 
     fetchVendors();
   }, []);
+
+  const uploadVendorsFromCSV = (vendors: Vendor[]) => {
+    console.log(vendors);
+    axios.post("/api/vendors/bulk-upload", {
+      vendors,
+    });
+  };
   const deleteVendor = (id: string) => {
     try {
       axios.delete("/api/vendors/" + id);
@@ -51,7 +58,7 @@ export default function VendorList() {
         >
           Create Vendor
         </Link>
-        <InputCSV name="vendors_csv" />
+        <InputCSV name="vendors_csv" handleFileUpload={uploadVendorsFromCSV} />
       </div>
 
       {isLoading && (

@@ -2,7 +2,13 @@
 import csvToJson from "@/lib/csv-to-json";
 import React, { useRef, useState } from "react";
 
-function InputCSV({ name }: { name: string }) {
+function InputCSV({
+  name,
+  handleFileUpload,
+}: {
+  name: string;
+  handleFileUpload: (data: any[]) => void;
+}) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +24,6 @@ function InputCSV({ name }: { name: string }) {
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        console.log("File content:", e.target?.result);
         onFileUpload(e.target?.result as string);
         setLoading(false);
       };
@@ -27,9 +32,9 @@ function InputCSV({ name }: { name: string }) {
   };
 
   const onFileUpload = (fileContent: string) => {
-    console.log("File processing complete:", fileContent);
     const jsonData = csvToJson(fileContent, { headers: true });
-    console.log(jsonData);
+    if (jsonData) handleFileUpload(jsonData);
+    else console.log("File does not contain  any csv");
   };
 
   return (

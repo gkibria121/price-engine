@@ -54,7 +54,14 @@ export default function ProductsPage() {
     };
     fetchVendorProducts();
   }, []);
-
+  const handleProductUploadFromCSV = (products: Product[]) => {
+    console.log(products);
+  };
+  const handleVendorProductUploadFromCSV = (
+    vendorProducts: VendorProduct[]
+  ) => {
+    console.log(vendorProducts);
+  };
   if (loading)
     return <div className="text-center p-8">Loading products...</div>;
   if (error) return <div className="text-center p-8 text-red-500">{error}</div>;
@@ -69,7 +76,10 @@ export default function ProductsPage() {
         >
           Add New Product
         </Link>
-        <InputCSV name="products_csv" />
+        <InputCSV
+          name="products_csv"
+          handleFileUpload={handleProductUploadFromCSV}
+        />
       </div>
 
       {products.length === 0 ? (
@@ -110,7 +120,10 @@ export default function ProductsPage() {
         >
           Add New Vendor Product
         </Link>
-        <InputCSV name="products_csv" />
+        <InputCSV
+          name="products_csv"
+          handleFileUpload={handleVendorProductUploadFromCSV}
+        />
       </div>
 
       {products.length === 0 ? (
