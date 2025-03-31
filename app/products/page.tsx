@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Product, VendorProduct } from "@/lib/api";
 import DeleteProduct from "@/components/DeleteProduct";
 import InputCSV from "@/components/InputCSV";
+import axios from "axios";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -54,8 +55,14 @@ export default function ProductsPage() {
     };
     fetchVendorProducts();
   }, []);
-  const handleProductUploadFromCSV = (products: Product[]) => {
-    console.log(products);
+  const handleProductUploadFromCSV = async (products: Product[]) => {
+    try {
+      await axios.post("/api/products/bulk-upload", {
+        products,
+      });
+    } catch (e) {
+      console.log(e);
+    }
   };
   const handleVendorProductUploadFromCSV = (
     vendorProducts: VendorProduct[]
