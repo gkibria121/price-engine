@@ -7,11 +7,13 @@ import DeleteProduct from "@/components/DeleteProduct";
 import InputCSV from "@/components/InputCSV";
 import axios, { AxiosError } from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import Modal from "@/components/Modal";
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [vendorProducts, setVendorProducts] = useState<VendorProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -138,13 +140,55 @@ export default function ProductsPage() {
         >
           Add New Vendor Product
         </Link>
-        <InputCSV
+        {/* <InputCSV
           name="products_csv"
           handleFileUpload={handleVendorProductUploadFromCSV}
-        />
+        /> */}
+        <button
+          className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded cursor-pointer"
+          onClick={() => setIsModalOpen((prev) => !prev)}
+        >
+          Import
+        </button>
       </div>
 
-      {products.length === 0 ? (
+      <Modal
+        isOpen={isModalOpen}
+        title="Add vendor products"
+        onClose={() => {
+          setIsModalOpen(false);
+        }}
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center  justify-between">
+            <span>Pricing rules</span>
+            <InputCSV
+              handleFileUpload={handleVendorProductUploadFromCSV}
+              name="pricing_rules"
+            />
+          </div>
+          <div className="flex items-center  justify-between">
+            <span>Delivery slots</span>
+            <InputCSV
+              handleFileUpload={handleVendorProductUploadFromCSV}
+              name="delivery_slots"
+            />
+          </div>
+          <div className="flex items-center  justify-between">
+            <span>Quantity pricings</span>
+            <InputCSV
+              handleFileUpload={handleVendorProductUploadFromCSV}
+              name="quantity_pricings"
+            />
+          </div>
+          <div className="flex flex-row-reverse mt-4">
+            <button className="bg-blue-600  text-white px-4 py-1 rounded-md cursor-pointer">
+              Save
+            </button>
+          </div>
+        </div>
+      </Modal>
+      {vendorProducts.length === 0 ? (
         <div className="text-center p-8 bg-gray-50 rounded-lg">
           <p className="mb-4">No vendor products found.</p>
           <Link
