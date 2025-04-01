@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/db";
 import Vendor from "@/models/Vendor";
+import { MongooseError } from "mongoose";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -35,6 +36,11 @@ export async function POST(req) {
     );
   } catch (error) {
     console.error("Error saving vendors:", error);
+    if (error instanceof MongooseError)
+      return NextResponse.json(
+        { message: "Validation faild!" },
+        { status: 403 }
+      );
     return NextResponse.json(
       { message: "Internal Server Error", error },
       { status: 500 }

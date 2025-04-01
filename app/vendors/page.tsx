@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Vendor } from "@/lib/api";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import InputCSV from "@/components/InputCSV";
-
+import toast, { Toaster } from "react-hot-toast";
 export default function VendorList() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,11 +33,22 @@ export default function VendorList() {
     fetchVendors();
   }, []);
 
-  const uploadVendorsFromCSV = (vendors: Vendor[]) => {
-    console.log(vendors);
-    axios.post("/api/vendors/bulk-upload", {
-      vendors,
-    });
+  const uploadVendorsFromCSV = async (vendors: Vendor[]) => {
+    const toastId = toast.loading("Uploading vendors");
+    try {
+      await axios.post("/api/vendors/bulk-upload", {
+        vendors,
+      });
+      toast.dismiss(toastId);
+      toast.success("Vendor uploaded!", {
+        duration: 1000,
+      });
+      setTimeout(() => window.location.reload(), 2000);
+    } catch (e) {
+      if (e instanceof AxiosError) toast.error(e?.response?.data?.message);
+    } finally {
+      toast.dismiss(toastId);
+    }
   };
   const deleteVendor = (id: string) => {
     try {
@@ -49,6 +60,7 @@ export default function VendorList() {
   };
   return (
     <main className="p-6 max-w-4xl mx-auto">
+      <Toaster />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Vendors</h1>
 
