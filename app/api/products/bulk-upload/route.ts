@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import ProductModel from "@/models/Product";
+import { MongooseError } from "mongoose";
 
 // Add Multiple Products
 export async function POST(req: NextRequest) {
@@ -25,6 +26,15 @@ export async function POST(req: NextRequest) {
     );
   } catch (error: any) {
     console.error("❌ Error:", error);
+    if (error instanceof MongooseError)
+      return NextResponse.json(
+        {
+          message: "Validation failed!",
+        },
+        {
+          status: 403,
+        }
+      );
     return NextResponse.json(
       { message: "Internal server error", error: error.message },
       { status: 500 }

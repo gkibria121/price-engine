@@ -5,8 +5,8 @@ import Link from "next/link";
 import { Product, VendorProduct } from "@/lib/api";
 import DeleteProduct from "@/components/DeleteProduct";
 import InputCSV from "@/components/InputCSV";
-import axios from "axios";
-
+import axios, { AxiosError } from "axios";
+import toast, { Toaster } from "react-hot-toast";
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [vendorProducts, setVendorProducts] = useState<VendorProduct[]>([]);
@@ -56,12 +56,22 @@ export default function ProductsPage() {
     fetchVendorProducts();
   }, []);
   const handleProductUploadFromCSV = async (products: Product[]) => {
+    let toastId;
     try {
+      toastId = toast.loading("Uploading products..");
       await axios.post("/api/products/bulk-upload", {
         products,
       });
+      toast.dismiss(toastId);
+      toast.success("Products uploaded!", {
+        duration: 1000,
+      });
+      setTimeout(() => window.location.reload(), 2000);
     } catch (e) {
       console.log(e);
+      if (e instanceof AxiosError) toast.error(e.response?.data.message);
+    } finally {
+      toast.dismiss(toastId);
     }
   };
   const handleVendorProductUploadFromCSV = (
@@ -75,6 +85,7 @@ export default function ProductsPage() {
 
   return (
     <div>
+      <Toaster />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Products</h1>
         <Link
