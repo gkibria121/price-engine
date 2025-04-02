@@ -60,10 +60,12 @@ export default function ProductsPage() {
     }
   };
 
-  const handleVendorProductUploadFromCSV = (
-    vendorProducts: VendorProduct[]
-  ) => {
-    console.log(vendorProducts);
+  const handleVendorProductUploadFromCSV = ({
+    pricingRules,
+    deliverySlots,
+    quantityPricings,
+  }) => {
+    console.log({ pricingRules, deliverySlots, quantityPricings });
     // Implement vendor product upload logic here
   };
 

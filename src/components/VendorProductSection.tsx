@@ -4,10 +4,13 @@ import { VendorProduct } from "@/lib/api";
 import InputCSV from "@/components/InputCSV";
 import Modal from "@/components/Modal";
 import VendorProductCard from "./VendorProductCard";
+import PricingRule from "@/utils/PricingRule";
+import DeliveryRule from "@/utils/DeliveryRule";
+import QuantityPricing from "@/utils/QuantityPricing";
 
 interface VendorProductSectionProps {
   vendorProducts: VendorProduct[];
-  onCSVUpload: (vendorProducts: VendorProduct[]) => void;
+  onCSVUpload: (...args: any[]) => void;
 }
 
 export default function VendorProductSection({
@@ -57,26 +60,47 @@ export default function VendorProductSection({
 }
 
 function ImportModal({ isOpen, onClose, onCSVUpload }) {
+  const [pricingRules, setPricingRules] = useState<PricingRule[]>([]);
+  const [deliverySlots, setDeliverySlots] = useState<DeliveryRule[]>([]);
+  const [quantityPricings, setQuantityPricings] = useState<QuantityPricing[]>(
+    []
+  );
+
+  const saveCSV = () => {
+    console.log(pricingRules, deliverySlots, quantityPricings);
+    onCSVUpload({
+      pricingRules,
+      deliverySlots,
+      quantityPricings,
+    });
+  };
+
   return (
     <Modal isOpen={isOpen} title="Add vendor products" onClose={onClose}>
       <div className="flex flex-col gap-4">
         <ImportRow
           label="Pricing rules"
           name="pricing_rules"
-          onUpload={onCSVUpload}
+          value={pricingRules}
+          onUpload={setPricingRules}
         />
         <ImportRow
           label="Delivery slots"
+          value={deliverySlots}
           name="delivery_slots"
-          onUpload={onCSVUpload}
+          onUpload={setDeliverySlots}
         />
         <ImportRow
           label="Quantity pricings"
+          value={quantityPricings}
           name="quantity_pricings"
-          onUpload={onCSVUpload}
+          onUpload={setQuantityPricings}
         />
         <div className="flex flex-row-reverse mt-4">
-          <button className="bg-blue-600 text-white px-4 py-1 rounded-md cursor-pointer">
+          <button
+            className="bg-blue-600 text-white px-4 py-1 rounded-md cursor-pointer"
+            onClick={saveCSV}
+          >
             Save
           </button>
         </div>
@@ -85,10 +109,13 @@ function ImportModal({ isOpen, onClose, onCSVUpload }) {
   );
 }
 
-function ImportRow({ label, name, onUpload }) {
+function ImportRow({ label, name, onUpload, value }) {
   return (
     <div className="flex items-center justify-between">
-      <span>{label}</span>
+      <span>
+        {label}
+        {value?.length ? ` (${value?.length})` : ""}
+      </span>
       <InputCSV handleFileUpload={onUpload} name={name} />
     </div>
   );
