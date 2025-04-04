@@ -60,12 +60,30 @@ export default function ProductsPage() {
     }
   };
 
-  const handleVendorProductUploadFromCSV = ({
+  const handleVendorProductUploadFromCSV = async ({
     pricingRules,
     deliverySlots,
     quantityPricings,
   }) => {
-    console.log({ pricingRules, deliverySlots, quantityPricings });
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/vendor-products/bulk-upload`,
+        {
+          pricingRules,
+          deliverySlots,
+          quantityPricings,
+        }
+      );
+      toast.success("Successfully vendor products uploaded!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (e: unknown) {
+      console.log(e);
+      toast.error("Something went wrong!");
+    } finally {
+    }
+
     // Implement vendor product upload logic here
   };
 
