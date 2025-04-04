@@ -62,7 +62,7 @@ export default function VendorProductForm({
     fields: quantityFields,
     append: appendQuantity,
     remove: removeQuantity,
-  } = useFieldArray({ control, name: "quantityPricing" });
+  } = useFieldArray({ control, name: "quantityPricings" });
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);

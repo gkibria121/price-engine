@@ -85,7 +85,7 @@ export async function GET() {
       "vendor",
       "pricingRules",
       "deliverySlots",
-      "quantityPricing",
+      "quantityPricings",
     ]);
 
     return NextResponse.json(vendorProducts, { status: 200 });

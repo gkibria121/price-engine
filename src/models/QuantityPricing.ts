@@ -12,4 +12,4 @@ const QuantityPricingSchema = new Schema({
 });
 
 export default models.QuantityPricing ||
-  model("QuantityPricing", QuantityPricingSchema);
+  model("QuantityPricings", QuantityPricingSchema);

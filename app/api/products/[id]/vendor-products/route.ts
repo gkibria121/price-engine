@@ -11,7 +11,7 @@ export async function GET(
     // Fetch product by ID
     const products = await VendorProductModel.find({
       product: productId,
-    }).populate(["pricingRules", "deliverySlots", "quantityPricing"]);
+    }).populate(["pricingRules", "deliverySlots", "quantityPricings"]);
     if (!products) {
       return NextResponse.json(
         { message: "No vendor Products found" },

@@ -9,7 +9,7 @@ const VendorProductSchema = new Schema({
   deliverySlots: [
     { type: Schema.Types.ObjectId, ref: "DeliverySlot", required: true },
   ],
-  quantityPricing: [
+  quantityPricings: [
     { type: Schema.Types.ObjectId, ref: "QuantityPricing", required: true },
   ],
 });

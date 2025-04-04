@@ -27,7 +27,7 @@ export default function VendorProductCard({
       <div className="text-sm text-gray-600">
         <p>{vendorProduct.pricingRules.length} pricing rules</p>
         <p>{vendorProduct.deliverySlots.length} delivery options</p>
-        <p>{vendorProduct.quantityPricing.length} quantity tiers</p>
+        <p>{vendorProduct.quantityPricings.length} quantity tiers</p>
       </div>
     </div>
   );

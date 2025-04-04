@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
       vendor: vendorId,
     })
       .populate("product")
-      .populate("quantityPricing")
+      .populate("quantityPricings")
       .populate("pricingRules")
       .populate("deliverySlots");
 

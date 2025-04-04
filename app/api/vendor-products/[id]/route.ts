@@ -18,7 +18,7 @@ export async function GET(
       "product",
       "vendor",
       "pricingRules",
-      "quantityPricing",
+      "quantityPricings",
       "deliverySlots",
     ]);
 
@@ -102,7 +102,7 @@ export async function PUT(
       "vendor",
       "pricingRules",
       "deliverySlots",
-      "quantityPricing",
+      "quantityPricings",
     ]);
 
     return NextResponse.json(
