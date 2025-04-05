@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
         (rule: { label: string; price: number }) =>
           new DeliveryRule(rule.label, rule.price)
       ),
-      vendorProduct.quantityPricing.map(
+      vendorProduct.quantityPricings.map(
         (qp: { quantity: number; price: number }) =>
           new QuantityPricing(qp.quantity, qp.price)
       )
