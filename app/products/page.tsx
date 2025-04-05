@@ -65,7 +65,9 @@ export default function ProductsPage() {
     deliverySlots,
     quantityPricings,
   }) => {
+    let toastId;
     try {
+      toastId = toast.loading("Vendor Products Uploading..");
       await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/vendor-products/bulk-upload`,
         {
@@ -75,13 +77,14 @@ export default function ProductsPage() {
         }
       );
       toast.success("Successfully vendor products uploaded!");
+      toast.remove(toastId);
       setTimeout(() => {
         window.location.reload();
       }, 2000);
     } catch (e: unknown) {
       console.log(e);
+      toast.remove(toastId);
       toast.error("Something went wrong!");
-    } finally {
     }
 
     // Implement vendor product upload logic here
