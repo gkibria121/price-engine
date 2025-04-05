@@ -6,6 +6,7 @@ import PricingRuleModel from "@/models/PriceRule";
 import DeliverySlotModel from "@/models/DeliverySlot";
 import QuantityPricingModel from "@/models/QuantityPricing";
 import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongoose";
 type ProductNameWithVendorMail = { product_name: string; vendor_email: string };
 
 // Add Product and Associate with Vendor
@@ -36,7 +37,13 @@ export async function POST(req: NextRequest) {
         []
       );
 
-    const results = [];
+    const results = [] as Array<{
+      product: ObjectId;
+      vendor: ObjectId;
+      pricingRules: ObjectId[];
+      deliverySlots: ObjectId[];
+      quantityPricings: ObjectId[];
+    }>;
 
     // Process each vendor product one by one to handle nested async operations
     for (const id of vendorProductIdentifiers) {
@@ -92,7 +99,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       results,
     });
-  } catch (e: unknown) {
+  } catch (e: any) {
     console.log(e);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
