@@ -84,7 +84,7 @@ export default function csvToJson(
             Number(value) % 1 === 0 ? parseInt(value, 10) : parseFloat(value);
         } else if (value === delimiter) {
         } else {
-          obj[headers[j]] = value;
+          obj[headers[j]] = removeOuterQuotes(value);
         }
       }
 
@@ -96,4 +96,17 @@ export default function csvToJson(
     console.error("Error converting CSV to JSON:", error);
     return null;
   }
+}
+
+function removeOuterQuotes(str) {
+  // Check if the string starts and ends with quotes
+  if (
+    (str.startsWith('"') && str.endsWith('"')) ||
+    (str.startsWith("'") && str.endsWith("'"))
+  ) {
+    // Remove first and last character
+    return str.substring(1, str.length - 1);
+  }
+  // If no matching quotes found, return original string
+  return str;
 }
