@@ -33,7 +33,7 @@ export default function VendorProductForm({
   const defaultValues: any = vendorProduct || {
     pricingRules: [{ attribute: "", value: "", price: 0 }],
     deliverySlots: deliveryMethods,
-    quantityPricing: [{ minQty: 1, price: 0 }],
+    quantityPricings: [{ minQty: 1, price: 0 }],
   };
 
   const {
@@ -87,7 +87,7 @@ export default function VendorProductForm({
       setSubmitting(false);
     }
   };
-
+  console.log(vendorProduct);
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       {error && (
@@ -360,7 +360,7 @@ export default function VendorProductForm({
               <label className="block mb-1 text-sm">Quantity</label>
               <input
                 type="number"
-                {...register(`quantityPricing.${index}.quantity` as const, {
+                {...register(`quantityPricings.${index}.quantity` as const, {
                   required: "Required",
                   valueAsNumber: true,
                   min: { value: 1, message: "Must be at least 1" },
@@ -373,7 +373,7 @@ export default function VendorProductForm({
               <input
                 type="number"
                 step="0.01"
-                {...register(`quantityPricing.${index}.price` as const, {
+                {...register(`quantityPricings.${index}.price` as const, {
                   required: "Required",
                   valueAsNumber: true,
                 })}

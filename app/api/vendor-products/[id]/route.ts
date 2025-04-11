@@ -36,7 +36,7 @@ export async function GET(
         vendor: productVendor.vendor,
         pricingRules: productVendor.pricingRules,
         deliverySlots: productVendor.deliverySlots,
-        quantityPricing: productVendor.quantityPricing,
+        quantityPricings: productVendor.quantityPricings,
       },
       { status: 200 }
     );
@@ -57,7 +57,7 @@ export async function PUT(
   try {
     await connectDB();
     const vendorProductId = (await params).id;
-    const { pricingRules, deliverySlots, quantityPricing } = await req.json();
+    const { pricingRules, deliverySlots, quantityPricings } = await req.json();
     console.log(vendorProductId);
     // Validate product exists
     const vendorProduct = await VendorProductModel.findById(vendorProductId);
@@ -76,7 +76,7 @@ export async function PUT(
       _id: { $in: vendorProduct.deliverySlots },
     });
     await QuantityPricingModel.deleteMany({
-      _id: { $in: vendorProduct.quantityPricing },
+      _id: { $in: vendorProduct.quantityPricings },
     });
 
     // Insert new values
@@ -85,7 +85,7 @@ export async function PUT(
       deliverySlots
     );
     const updatedQuantityPricing = await QuantityPricingModel.insertMany(
-      quantityPricing
+      quantityPricings
     );
 
     // Update vendorProduct with new associations
@@ -94,7 +94,7 @@ export async function PUT(
       {
         pricingRules: updatedPricingRules.map((rule) => rule._id),
         deliverySlots: updatedDeliverySlots.map((slot) => slot._id),
-        quantityPricing: updatedQuantityPricing.map((price) => price._id),
+        quantityPricings: updatedQuantityPricing.map((price) => price._id),
       },
       { new: true }
     ).populate([
